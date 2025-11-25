@@ -4,7 +4,7 @@ WIP amalgamation of dotfiles vaguely based on Gruvbox.
 
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/14867fed-128a-452a-9a44-2cea607ff99b" />
 
-Not finished by any means. Remind me to add setup scripts and to credi people whose work I've shamelessly adapted.
+Not finished by any means. Also remind me to add setup scripts and to credit people whose work I've shamelessly adapted.
 
 ## Stuff
 - WM: Hyprland
