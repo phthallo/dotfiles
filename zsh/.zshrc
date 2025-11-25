@@ -11,7 +11,9 @@ autoload -Uz compinit
 compinit
 # End of lines added by compinstall
 
+alias spotify="flatpak run com.spotify.Client"
+
 eval "$(starship init zsh)"
 fastfetch
 
-
+export PATH=$PATH:/home/phthallo/.spicetify

@@ -1,15 +1,15 @@
 /* colors defined at top for easy configuring */
-@define-color background #2C2A24;
-@define-color second-background #3A372F;
+/* colors defined at top for easy configuring */
+@define-color background #282828;
+@define-color second-background #3a372f;
 @define-color text #DDD5C4;
-@define-color borders #A0907A;
-@define-color focused #D08B57;
+@define-color borders #fe8019;
+@define-color focused rgba(184, 187, 38, 0.8);
 @define-color focused2 #BFAA80;
 @define-color color1 #7699A3;
 @define-color color2 #8D7AAE;
-@define-color color3 #78997A;
+@define-color color3 #98971a;
 @define-color urgent #B05A5A;
-
 
 /* font declared */
 * {
@@ -41,24 +41,27 @@ window#waybar.empty #window {
 
 /* configuring the modules */
 .modules-left {
-  margin: 10px 0 0 10px;
-  padding: 0 0 0 7px;
+  margin: 20px 0 0 20px;
+  padding: 0 0 0 10px;
   background-color: @background;
   border: 2px solid @focused;
+  border-radius: 7px;
 }
 
 .modules-center {
-  margin: 10px 0 0 0;
+  margin: 20px 0 0 0;
   padding: 0 10px 0 10px;
   background-color: @background;
   border: 2px solid @focused;
+  border-radius: 7px;
 }
 
 .modules-right {
-  margin: 10px 10px 0 0;
+  margin: 20px 20px 0 0;
   padding: 0 10px 0 10px;
   background-color: @background;
   border: 2px solid @focused;
+  border-radius: 7px;
 }
 
 
@@ -196,7 +199,7 @@ button {
 
 #battery.charging,
 #battery.plugged {
-  background-color: @focused2 ;
+  background-color: @color3;
   color: @background;
 }
 
