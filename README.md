@@ -2,7 +2,7 @@
 
 WIP amalgamation of dotfiles vaguely based on Gruvbox.
 
-<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/14867fed-128a-452a-9a44-2cea607ff99b" />
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/35dbfff9-035e-44d6-8b02-02dc39cc2f25" />
 
 Not finished by any means. Also remind me to add setup scripts and to credit people whose work I've shamelessly adapted.
 
