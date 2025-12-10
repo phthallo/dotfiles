@@ -6,6 +6,16 @@ WIP amalgamation of dotfiles vaguely based on Gruvbox.
 
 Not finished by any means. Also remind me to add setup scripts and to credit people whose work I've shamelessly adapted.
 
+## Installation
+1. Clone the repository. 
+    ```
+    git clone https://github.com/phthallo/dotfiles && cd dotfiles
+    ```
+2. Run the install script.
+    ```
+    chmod +x install.sh && ./install.sh
+    ```
+
 ## Stuff
 - WM: Hyprland
 - Status bar: Waybar
