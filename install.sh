@@ -25,6 +25,23 @@ kitten themes 'Gruvbox Material Dark Medium'
 echo "Cloning and building nwg-dock-hyprland"
 git clone github.com/nwg-piotr/nwg-dock-hyprland && cd nwg-dock-hyprland && make get && make build && sudo make install && cd .. && rm -r nwg-dock-hyprland
 
+# echo "Cloning and building keyd"
+# git clone https://github.com/rvaiya/keyd
+# cd keyd
+# make && sudo make install
+# sudo systemctl enable --now keyd
+# cd .. && rm -r keyd
+
+echo "Cloning and building nwg-look"
+git clone github.com/nwg-piotr/nwg-look 
+cd nwg-look && make build && sudo make install
+cd .. && rm -r nwg-look
+
+echo "Installing VSCode"
+sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc && echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\nautorefresh=1\ntype=rpm-md\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" | sudo tee /etc/yum.repos.d/vscode.repo > /dev/null
+
+dnf check-update && sudo dnf install code
+
 echo "Installing 0xProto Mono Nerd Font"
 wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/0xProto.zip \
     && unzip 0xProto.zip -d 0xProto \
@@ -45,6 +62,9 @@ flatpak install com.spotify.Client \
 echo "Installing GH CLI"
 sudo dnf config-manager addrepo --from-repofile=https://cli.github.com/packages/rpm/gh-cli.repo
 sudo dnf install gh --repo gh-cli
+
+echo "Installing Tailscale"
+curl -fsSL https://tailscale.com/install.sh | sh
 
 echo "Reloading configuration"
 stow config && hyprctl reload 
