@@ -5,7 +5,7 @@ SAVEHIST=1000
 bindkey -v
 # End of lines configured by zsh-newuser-install
 # The following lines were added by compinstall
-zstyle :compinstall filename '/home/phthallo/.zshrc'
+zstyle :compinstall filename "$HOME/.zshrc"
 
 autoload -Uz compinit
 compinit
@@ -16,7 +16,7 @@ alias spotify="flatpak run com.spotify.Client"
 eval "$(starship init zsh)"
 fastfetch
 
-export PATH=$PATH:/home/phthallo/.spicetify
+export PATH=$PATH:$HOME/.spicetify
 
 # Add ~/.local/bin to PATH
 if [ -d "${HOME}/.local/bin" ] && [[ ":${PATH}:" != *":${HOME}/.local/bin:"* ]]; then
