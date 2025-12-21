@@ -66,6 +66,10 @@ sudo dnf install gh --repo gh-cli
 echo "Installing Tailscale"
 curl -fsSL https://tailscale.com/install.sh | sh
 
+echo "Installing dependencies for dark mode"
+sudo dnf install adw-gtk3-theme
+sudo dnf install qt5ct qt6ct kvantum kvantum breeze-icons   
+
 echo "Reloading configuration"
 stow config && hyprctl reload 
 
