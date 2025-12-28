@@ -31,6 +31,7 @@ Not finished by any means. Also remind me to add setup scripts and to credit peo
 - Spicetify[^1]
 - Fastfetch 
 - Symlink management: stow 
+- Background: Pixel art by [Laced Wing Studio](https://ko-fi.com/lacedwingstudio)
 
 Config files go in `config/.config` (`~/dotfiles/config/.config`).
 
