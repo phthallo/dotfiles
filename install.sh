@@ -10,8 +10,8 @@ sudo dnf copr enable rowanfr/fw-ectool
 echo "Installing Hyprland"
 sudo dnf install hyprland hyprland-devel 
 
-echo "Installing build dependencies and DNF-available packages (stow, starship, fastfetch, wlogout, dolphin, flameshot, waybar, hyprpaper, zsh, vim)"
-sudo dnf install dnf5-plugins make gcc golang glib2-devel cairo-devel cairo-gobject-devel gobject-introspection-devel atk-devel gdk-pixbuf2-devel pango-devel gtk3-devel gtk-layer-shell-devel stow starship wlogout dolphin flameshot waybar hyprpaper zsh vim fastfetch SwayNotificationCenter 
+echo "Installing build dependencies and DNF-available packages (stow, starship, fastfetch, wlogout, dolphin, flameshot, waybar, hyprpaper, zsh, vim, blueman)"
+sudo dnf install dnf5-plugins make gcc golang glib2-devel cairo-devel cairo-gobject-devel gobject-introspection-devel atk-devel gdk-pixbuf2-devel python3-gobject-devel pango-devel gtk3-devel gtk-layer-shell-devel stow starship wlogout dolphin flameshot waybar hyprpaper zsh vim blueman fastfetch SwayNotificationCenter 
 
 chsh -s $(which zsh)
 
@@ -36,6 +36,7 @@ echo "Cloning and building nwg-look"
 git clone github.com/nwg-piotr/nwg-look 
 cd nwg-look && make build && sudo make install
 cd .. && rm -r nwg-look
+
 
 echo "Installing VSCode"
 sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc && echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\nautorefresh=1\ntype=rpm-md\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" | sudo tee /etc/yum.repos.d/vscode.repo > /dev/null
