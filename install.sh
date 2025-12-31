@@ -11,7 +11,7 @@ echo "Installing Hyprland"
 sudo dnf install hyprland hyprland-devel 
 
 echo "Installing build dependencies and DNF-available packages (stow, starship, fastfetch, wlogout, dolphin, flameshot, waybar, hyprpaper, zsh, vim, blueman)"
-sudo dnf install dnf5-plugins make gcc golang glib2-devel cairo-devel cairo-gobject-devel gobject-introspection-devel atk-devel gdk-pixbuf2-devel python3-gobject-devel pango-devel gtk3-devel gtk-layer-shell-devel stow starship wlogout dolphin flameshot waybar hyprpaper zsh vim blueman fastfetch SwayNotificationCenter 
+sudo dnf install dnf5-plugins make gcc golang glib2-devel cairo-devel cairo-gobject-devel gobject-introspection-devel atk-devel gdk-pixbuf2-devel python3-gobject-devel pango-devel gtk3-devel gtk-layer-shell-devel pulseaudio-libs pulseaudio-libs-devel cxxopts stow starship wlogout dolphin flameshot waybar hyprpaper zsh vim blueman fastfetch SwayNotificationCenter 
 
 chsh -s $(which zsh)
 
@@ -22,6 +22,10 @@ echo "Installing and configuring Kitty"
 curl -L https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin
 kitten themes 'Gruvbox Material Dark Medium'
 
+echo "Installing Avizo"
+sudo dnf copr enable tswsl1989/tswsl-wayland-extras 
+dnf install avizo 
+
 echo "Cloning and building nwg-dock-hyprland"
 git clone github.com/nwg-piotr/nwg-dock-hyprland && cd nwg-dock-hyprland && make get && make build && sudo make install && cd .. && rm -r nwg-dock-hyprland
 
@@ -31,6 +35,15 @@ git clone github.com/nwg-piotr/nwg-dock-hyprland && cd nwg-dock-hyprland && make
 # make && sudo make install
 # sudo systemctl enable --now keyd
 # cd .. && rm -r keyd
+#
+
+echo "Cloning and building pamixer"
+git clone https://github.com/cdemoulins/pamixer.git && cd pamixer
+meson setup build
+meson compile -C build
+meson install -C build
+cd ..
+rm -r pamixer
 
 echo "Cloning and building nwg-look"
 git clone github.com/nwg-piotr/nwg-look 
