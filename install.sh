@@ -15,6 +15,10 @@ sudo dnf install dnf5-plugins make gcc golang glib2-devel cairo-devel cairo-gobj
 
 chsh -s $(which zsh)
 
+echo "Installing the Meson build system"
+python3 -m pip install meson
+python3 -m pip install ninja
+
 echo "Installing Vicinae"
 curl -fsSL https://vicinae.com/install.sh | bash
 
