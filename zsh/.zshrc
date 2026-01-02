@@ -22,3 +22,10 @@ export PATH=$PATH:$HOME/.spicetify
 if [ -d "${HOME}/.local/bin" ] && [[ ":${PATH}:" != *":${HOME}/.local/bin:"* ]]; then
     PATH="${HOME}/.local/bin:${PATH}"
 fi
+
+# bun completions
+[ -s "/home/phthallo/.bun/_bun" ] && source "/home/phthallo/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
