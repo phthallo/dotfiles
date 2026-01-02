@@ -4,7 +4,7 @@ WIP amalgamation of dotfiles vaguely based on Gruvbox.
 
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/35dbfff9-035e-44d6-8b02-02dc39cc2f25" />
 
-Not finished by any means. Also remind me to add setup scripts and to credit people whose work I've shamelessly adapted.
+Not finished by any means. Also remind me ~~to add setup scripts and~~ to credit people whose work I've shamelessly adapted and to fix the waybar scripts.
 
 ## Installation
 1. Clone the repository. 
@@ -41,7 +41,7 @@ Config files go in `config/.config` (`~/dotfiles/config/.config`).
 - Super + Enter for terminal
 - Super + M for Spotify
 - Super + Q to close the current program
-- Super + Printscreen to screenshot
+- Super + Shift + S to screenshot
 - Super + F for file manager
 
 [^1]: Make sure to install Spotify using Flatpak.
