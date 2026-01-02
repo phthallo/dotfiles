@@ -18,6 +18,7 @@ Not finished by any means. Also remind me ~~to add setup scripts and~~ to credit
     ```
 
 ## Stuff
+- Distro: Fedora (setup script was written and intended for Fedora) 
 - WM: Hyprland
 - Status bar: Waybar
 - Dock: nwg-dock-hyprland
