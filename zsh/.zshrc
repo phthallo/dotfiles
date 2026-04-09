@@ -11,6 +11,12 @@ autoload -Uz compinit
 compinit
 # End of lines added by compinstall
 
+export ZSH="$HOME/.oh-my-zsh"
+ZSH_THEME="robbyrussell"
+
+plugins=(git zsh-autosuggestions)
+source $ZSH/oh-my-zsh.sh
+
 alias spotify="flatpak run com.spotify.Client"
 
 eval "$(starship init zsh)"

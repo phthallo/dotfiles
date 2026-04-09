@@ -1,0 +1,20 @@
+[General]
+ShowFullPathInTitlebar=true
+Version=202
+ViewPropsTimestamp=2025,12,8,22,46,40.959
+
+[IconsMode]
+PreviewSize=80
+
+[KFileDialog Settings]
+Places Icons Auto-resize=false
+Places Icons Static Size=22
+
+[MainWindow]
+MenuBar=Disabled
+
+[PreviewSettings]
+Plugins=audiothumbnail,glycin-heif,papers,comicbookthumbnail,cursorthumbnail,djvuthumbnail,ebookthumbnail,gnome-epub-thumbnailer,exrthumbnail,directorythumbnail,imagethumbnail,glycin-image-rs,jpegthumbnail,glycin-jxl,kraorathumbnail,windowsexethumbnail,windowsimagethumbnail,gsf-office,gnome-mobi-thumbnailer,totem,opendocumentthumbnail,glycin-svg,svgthumbnail,gnome-font-viewer,ffmpegthumbs
+
+[UiSettings]
+ColorScheme=KvMojave
