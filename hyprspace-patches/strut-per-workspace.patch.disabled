@@ -1,0 +1,27 @@
+diff --git a/src/Layout.cpp b/src/Layout.cpp
+index 77b95ed..435f5d4 100644
+--- a/src/Layout.cpp
++++ b/src/Layout.cpp
+@@ -42,6 +42,14 @@ void CHyprspaceWidget::updateLayout() {
+         const auto oActiveWorkspace = pMonitor->m_activeWorkspace;
+         if (!oActiveWorkspace) return;
+ 
++        // The panel strut lives on the monitor, not the workspace, so recalculating the
++        // other workspaces below would tile them into the shrunken area too - which is
++        // what leaks into the overview thumbnails. Drop just our own contribution for the
++        // duration of that loop, keeping whatever layer surfaces reserved on top of it.
++        const auto oReservedArea = pMonitor->m_reservedArea;
++        pMonitor->m_reservedArea = Desktop::CReservedArea(oReservedArea.top() - (config.onBottom->value() ? 0 : currentHeight), oReservedArea.right(),
++                                                          oReservedArea.bottom() - (config.onBottom->value() ? currentHeight : 0), oReservedArea.left());
++
+         for (auto& ws : g_pCompositor->getWorkspaces()) { // HACK: recalculate other workspaces without reserved area
+             if (ws && ws->m_monitor && ws->m_monitor->m_id == ownerID && ws->m_id != oActiveWorkspace->m_id) {
+                 pMonitor->m_activeWorkspace = ws.lock();
+@@ -54,6 +62,7 @@ void CHyprspaceWidget::updateLayout() {
+             }
+         }
+         pMonitor->m_activeWorkspace = oActiveWorkspace;
++        pMonitor->m_reservedArea = oReservedArea;
+ 
+         const auto curRules = std::to_string(pMonitor->activeWorkspaceID()) + ", gapsin:" + std::to_string(config.gapsIn->value()) + ", gapsout:" + std::to_string(config.gapsOut->value());
+         if (config.overrideGaps->value()) {
