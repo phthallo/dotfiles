@@ -1,0 +1,20 @@
+# Framework EC battery charge limit.
+# Caps charging at 85% to slow battery wear. Runs at boot and again after
+# resume, since the EC drops the limit if it loses power.
+#
+# Install:
+#   sudo cp ~/dotfiles/system/ec-charge-limit.service /etc/systemd/system/
+#   sudo systemctl enable --now ec-charge-limit.service
+
+[Unit]
+Description=Set Framework EC battery charge limit
+After=multi-user.target suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target
+ConditionPathExists=/dev/cros_ec
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/ectool fwchargelimit 85
+
+[Install]
+WantedBy=multi-user.target suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target

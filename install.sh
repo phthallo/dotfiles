@@ -88,6 +88,10 @@ echo "Installing dependencies for dark mode"
 sudo dnf install adw-gtk3-theme
 sudo dnf install qt5ct qt6ct kvantum kvantum breeze-icons   
 
+echo "Installing the Framework EC battery charge limit service"
+sudo cp system/ec-charge-limit.service /etc/systemd/system/
+sudo systemctl enable --now ec-charge-limit.service
+
 echo "Reloading configuration"
 stow config && hyprctl reload 
 
