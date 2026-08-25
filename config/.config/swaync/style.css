@@ -6,6 +6,9 @@
 @define-color cc_fg #ebdbb2;
 @define-color cc_accent #d79921;
 @define-color cc_muted #d79921;
+/* the first stop of col.active_border in hyprland.conf, so the panel is
+   outlined like a focused window */
+@define-color cc_border #98971a;
 
 /* =========================
    CONTROL CENTER PANEL
@@ -14,7 +17,8 @@
 .control-center {
   background: @cc_bg;
   color: @cc_fg;
-  border-radius: 16px;
+  border: 2px solid @cc_border;
+  border-radius: 10px;
   padding: 12px;
 }
 

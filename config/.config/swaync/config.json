@@ -10,8 +10,13 @@
   "control-center-layer": "top",
   "control-center-exclusive-zone": true,
   "control-center-width": 420,
-  "control-center-height": 500,
-  "fit-to-screen": true,
+  "_comment-margins": "matches gaps_out = 20 in hyprland.conf, so the panel sits off the edge by the same amount a tiled window does",
+  "control-center-margin-top": 20,
+  "control-center-margin-right": 20,
+  "control-center-margin-bottom": 20,
+  "control-center-margin-left": 0,
+  "control-center-height": -1,
+  "fit-to-screen": false,
   "notification-window-width": 420,
   "widgets": [
     "buttons-grid#cc_controls",
@@ -57,7 +62,7 @@
       "text": "Notifications"
     },
     "notifications": {
-      "vexpand": true
+      "vexpand": false
     }
   }
 }
