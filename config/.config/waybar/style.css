@@ -148,7 +148,6 @@ button {
 #battery,
 #cpu,
 #memory,
-#temperature,
 #custom-bluetooth,
 #network {
   padding: 0 10px;
@@ -157,7 +156,6 @@ button {
 #clock:hover,
 #battery:hover,
 #custom-cpu:hover,
-#temperature:hover,
 #custom-bluetooth:hover,
 #network:hover,
 #idle_inhibitor:hover,
@@ -192,10 +190,6 @@ button {
 #battery.plugged {
   background-color: @color3;
   color: @background;
-}
-
-#temperature.critical {
-  color: @urgent;
 }
 
 #battery.critical:not(.charging) {
