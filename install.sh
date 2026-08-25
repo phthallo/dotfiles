@@ -11,7 +11,7 @@ echo "Installing Hyprland"
 sudo dnf install hyprland hyprland-devel 
 
 echo "Installing build dependencies and DNF-available packages (stow, starship, fastfetch, wlogout, dolphin, flameshot, waybar, hyprpaper, zsh, vim, blueman)"
-sudo dnf install dnf5-plugins make gcc golang glib2-devel cairo-devel cairo-gobject-devel gobject-introspection-devel atk-devel gdk-pixbuf2-devel python3-gobject-devel pango-devel gtk3-devel gtk-layer-shell-devel pulseaudio-libs pulseaudio-libs-devel cxxopts stow starship wlogout dolphin flameshot waybar hyprpaper zsh vim blueman fastfetch SwayNotificationCenter 
+sudo dnf install dnf5-plugins make gcc golang glib2-devel cairo-devel cairo-gobject-devel gobject-introspection-devel atk-devel gdk-pixbuf2-devel python3-gobject-devel pango-devel gtk3-devel gtk-layer-shell-devel pulseaudio-libs pulseaudio-libs-devel cxxopts jq pkgconf-pkg-config stow starship wlogout dolphin flameshot waybar hyprpaper zsh vim blueman fastfetch SwayNotificationCenter 
 
 chsh -s $(which zsh)
 

@@ -32,6 +32,7 @@ pin_for() {
 command -v hyprctl >/dev/null || die "hyprctl not found - run this inside a Hyprland session"
 command -v git     >/dev/null || die "git not found"
 command -v make    >/dev/null || die "make not found - sudo dnf install make gcc"
+command -v jq      >/dev/null || die "jq not found - sudo dnf install jq"
 
 echo "Detecting Hyprland version"
 TAG="$(hyprctl version -j | jq -r '.tag')"
