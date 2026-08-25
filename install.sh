@@ -93,6 +93,16 @@ sudo cp system/ec-charge-limit.service /etc/systemd/system/
 sudo systemctl enable --now ec-charge-limit.service
 
 echo "Reloading configuration"
-stow config && hyprctl reload 
+stow config && hyprctl reload
+
+echo "Building and installing the Hyprspace overview plugin"
+# pins itself to the Hyprspace commit matching the running Hyprland version -
+# see pin_for() in the script. Needs a live Hyprland session, so it is skipped
+# on a first install from a TTY; re-run it after logging in.
+if command -v hyprctl >/dev/null && hyprctl version >/dev/null 2>&1; then
+    "$(dirname "$0")/install-hyprspace.sh"
+else
+    echo "  no Hyprland session - run ./install-hyprspace.sh after logging in"
+fi
 
 echo "Done! Log out and select Hyprland." 

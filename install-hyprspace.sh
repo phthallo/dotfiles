@@ -11,12 +11,21 @@ BACKUP="${XDG_STATE_HOME}/hyprspace/Hyprspace.so.bak"
 
 die() { echo "error: $*" >&2; exit 1; }
 
+# Pins are matched on the full version first, then on the minor series. Upstream
+# moves the plugin's API in step with Hyprland point releases, so a series-wide
+# pin is not safe on its own: 3624878 targets the V2 API landed in 0.55.4 and
+# renders a broken overview on 0.55.2 (windows vanish except the strip under the
+# panel). Keep exact entries above the series fallbacks.
 pin_for() {
     case "$1" in
-        0.50) echo "0a82e3724f929de8ad8fb04d2b7fa128493f24f7" ;;
-        0.55) echo "3624878a7b6c00dfa77e351438fa209df99ad81d" ;;
-        0.56) echo "96a3b958a05a8942d26a5ec510f60217d63a7dce" ;;
-        *)    return 1 ;;
+        # exact version -> commit
+        0.55.2) echo "c109256f5a79a8694acd6176971c4a273d32264c" ;;  # origin/main, last 0.55.0-3 line
+        0.55.4) echo "3624878a7b6c00dfa77e351438fa209df99ad81d" ;;  # V2 API, 0.55.4 only
+        # minor series -> commit
+        0.50)   echo "0a82e3724f929de8ad8fb04d2b7fa128493f24f7" ;;
+        0.55)   echo "c109256f5a79a8694acd6176971c4a273d32264c" ;;
+        0.56)   echo "96a3b958a05a8942d26a5ec510f60217d63a7dce" ;;
+        *)      return 1 ;;
     esac
 }
 
@@ -27,10 +36,12 @@ command -v make    >/dev/null || die "make not found - sudo dnf install make gcc
 echo "Detecting Hyprland version"
 TAG="$(hyprctl version -j | jq -r '.tag')"
 [ -n "$TAG" ] && [ "$TAG" != "null" ] || die "could not read version from hyprctl"
+EXACT="$(echo "$TAG" | sed -E 's/^v?([0-9]+\.[0-9]+\.[0-9]+).*/\1/')"
 MINOR="$(echo "$TAG" | sed -E 's/^v?([0-9]+\.[0-9]+).*/\1/')"
 echo "  running Hyprland ${TAG} (series ${MINOR})"
 
-COMMIT="$(pin_for "$MINOR")" || die "no Hyprspace pin known for Hyprland ${MINOR} - add one to pin_for()"
+COMMIT="$(pin_for "$EXACT")" || COMMIT="$(pin_for "$MINOR")" \
+    || die "no Hyprspace pin known for Hyprland ${EXACT} - add one to pin_for()"
 echo "  pinning Hyprspace to ${COMMIT:0:12}"
 
 if ! pkg-config --exists hyprland; then
@@ -55,6 +66,9 @@ fi
 
 echo "Checking out pinned commit"
 git -C "$SRC_DIR" checkout --quiet --detach "$COMMIT"
+# a local tag makes the pin visible in git log and survives fetch; detached HEAD
+# already refuses `git pull`, so the tree cannot drift onto a newer API by accident
+git -C "$SRC_DIR" tag -f "pin/hyprland-${EXACT}" "$COMMIT" >/dev/null
 
 shopt -s nullglob
 PATCHES=("$PATCH_DIR"/*.patch)
