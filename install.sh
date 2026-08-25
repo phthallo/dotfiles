@@ -5,7 +5,7 @@
 # going, so one dead upstream mirror does not cost you the whole install.
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
-TOTAL=21
+TOTAL=20
 STEP=0
 FAILED=()
 NOTES=()
@@ -35,7 +35,8 @@ note() { NOTES+=("$*"); }
 
 printf '%s%sepic dotfiles installer%s %s(very experimental)%s\n' "$BOLD" "$GREEN" "$RESET" "$DIM" "$RESET"
 
-step "Refreshing dnf metadata"
+step "Refreshing dnf metadata" "dnf5-plugins first: the copr subcommand used in the next step lives there."
+run sudo dnf install -y dnf5-plugins
 run sudo dnf upgrade --refresh -y
 
 step "Enabling Copr repositories" "Third-party builds of SwayNC, starship, and the Framework EC tool."
@@ -48,29 +49,29 @@ step "Installing Hyprland"
 run sudo dnf install -y hyprland hyprland-devel
 
 step "Installing packages and build dependencies" "Everything from dnf in one transaction: the desktop bits plus the headers the source builds below need."
-run sudo dnf install -y dnf5-plugins make gcc golang glib2-devel cairo-devel \
+run sudo dnf install -y make gcc golang glib2-devel cairo-devel \
     cairo-gobject-devel gobject-introspection-devel atk-devel gdk-pixbuf2-devel \
     python3-gobject-devel pango-devel gtk3-devel gtk-layer-shell-devel \
     pulseaudio-libs pulseaudio-libs-devel cxxopts jq pkgconf-pkg-config \
+    git curl wget unzip flatpak meson ninja-build fw-ectool \
     stow starship wlogout dolphin flameshot waybar hyprpaper zsh vim blueman \
     fastfetch SwayNotificationCenter
 
 step "Setting zsh as the login shell"
-if chsh -s "$(which zsh)"; then
+if chsh -s "$(command -v zsh)"; then
     ok "login shell set to zsh"
     note "Log out and back in for zsh to become your shell."
 else
     fail "chsh failed"
 fi
 
-step "Installing Meson and Ninja" "Build system for pamixer, further down."
-run python3 -m pip install --user meson ninja
-
 step "Installing Vicinae"
 run bash -c 'curl -fsSL https://vicinae.com/install.sh | bash'
 
 step "Installing Kitty"
 if curl -fsSL https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin; then
+    # the installer drops kitty in ~/.local/kitty.app; this shell has not seen it yet
+    export PATH="${HOME}/.local/kitty.app/bin:${PATH}"
     kitten themes 'Gruvbox Material Dark Medium' && ok "Kitty installed, Gruvbox theme applied"
 else
     fail "Kitty install failed"
@@ -132,6 +133,8 @@ step "Installing Spotify and Spicetify"
 if flatpak install -y flathub com.spotify.Client; then
     curl -fsSL https://raw.githubusercontent.com/spicetify/cli/main/install.sh | sh
     curl -fsSL https://raw.githubusercontent.com/spicetify/marketplace/main/resources/install.sh | sh
+    # same story as kitty: spicetify installs to ~/.spicetify, off this shell's PATH
+    export PATH="${HOME}/.spicetify:${HOME}/.local/bin:${PATH}"
     spicetify config prefs_path ~/.var/app/com.spotify.Client/config/spotify/prefs
     SPOTIFY_DIR=/var/lib/flatpak/app/com.spotify.Client/x86_64/stable/active/files/extra/share/spotify
     sudo chmod a+wr "$SPOTIFY_DIR"
@@ -163,7 +166,7 @@ step "Installing dark mode theming" "Themes only; GTK and Qt each need to be poi
 run sudo dnf install -y adw-gtk3-theme qt5ct qt6ct kvantum breeze-icons
 note "Pick the GTK theme in nwg-look, and the Qt one in qt5ct/qt6ct (style: kvantum)."
 
-step "Installing the Framework EC charge limit service" "Caps the battery at 80% to slow wear."
+step "Installing the Framework EC charge limit service" "Caps the battery at 85% to slow wear."
 if sudo cp "$REPO_DIR/system/ec-charge-limit.service" /etc/systemd/system/ \
     && sudo systemctl enable --now ec-charge-limit.service; then
     ok "ec-charge-limit.service enabled"
@@ -172,6 +175,8 @@ else
 fi
 
 step "Linking the configuration" "stow symlinks config/ into ~/.config."
+warn "stow refuses to overwrite real files - if this fails, move the conflicting"
+warn "~/.config entries it names out of the way and re-run: stow -d $REPO_DIR config"
 if stow -d "$REPO_DIR" config; then
     ok "config linked"
     hyprctl reload >/dev/null 2>&1 && ok "Hyprland reloaded"
