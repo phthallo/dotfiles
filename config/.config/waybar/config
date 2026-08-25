@@ -134,6 +134,8 @@
             "cpu",
             "custom/split",
             "memory",
+            "custom/split",
+            "temperature",
             "custom/closebracket"
         ]
     },
@@ -147,6 +149,15 @@
         "format": "RAM:{}%",
         "tooltip": false,
         "interval": 2,
+        "on-click": "kitty -e btop"
+    },
+    "temperature": {
+        "hwmon-path-abs": "/sys/devices/pci0000:00/0000:00:18.3/hwmon",
+        "input-filename": "temp1_input",
+        "format": "TEMP:{temperatureC}°C",
+        "critical-threshold": 90,
+        "interval": 2,
+        "tooltip": false,
         "on-click": "kitty -e btop"
     },
 
