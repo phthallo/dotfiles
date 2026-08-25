@@ -36,7 +36,6 @@
             "custom/arch",
             "idle_inhibitor",
             "custom/split",
-            "custom/powerprofile",
             "custom/themeswitcher",
             "custom/closebracket"
         ]
@@ -46,20 +45,12 @@
         "tooltip": false,
          "on-click": "vicinae open"
     },
-    "custom/powerprofile": {
-        "exec": "~/.config/waybar/scripts/powerprofile.sh display",
-        "on-click": "~/.config/waybar/scripts/powerprofile.sh toggle",
-        "interval": 5,
-        "tooltip": true,
-        "exec-tooltip": "~/.config/waybar/scripts/powerprofile.sh tooltip",
-        "tooltip-format": "Power Profile: {} \nClick to cycle: Efficient → Normal → Overclocked"
-    },
     "custom/themeswitcher":{
         "format": "",
         "tooltip": true,
         "tooltip-format": "Click to change theme",
         "on-click": "~/.config/waybar/scripts/theme-switcher.sh next",
-        "on-click-right": "~/.config/scripts/theme-switcher.sh random"
+        "on-click-right": "~/.config/waybar/scripts/theme-switcher.sh random"
     },
 
     "group/workspaces":{
@@ -150,13 +141,13 @@
         "format": "CPU:{usage}%",
         "tooltip": false,
         "interval": 2,
-        "on-click": "kitty -e btop",
+        "on-click": "kitty -e btop"
     },
     "memory":{
         "format": "RAM:{}%",
         "tooltip": false,
         "interval": 2,
-        "on-click": "kitty -e btop",
+        "on-click": "kitty -e btop"
     },
 
     "group/brightvol": {
@@ -201,7 +192,6 @@
             "custom/split",
             "network",
             "custom/bluetooth",
-            "custom/clipboard",
             "battery",
             "custom/swaync",
             "custom/closebracket"
@@ -209,13 +199,7 @@
     },
     "clock": {
         "format": "{:%I:%M}",
-        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
-        "onclick" : "kalender"
-    },
-    "custom/clipboard": {
-        "format": "",
-        "tooltip": false,
-        "on-click": "~/.config/waybar/scripts/clipboard_menu.sh"
+        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
     },
     "battery": {
         "states": {
@@ -237,10 +221,19 @@
         }
     },
     "custom/swaync": {
-      "format": "",
-      "exec": "swaync-client -swb",
-      "on-click": "swaync-client --toggle-panel",
-      "interval": 0
+        "format": "{icon}{text}",
+        "format-icons": {
+            "none": "",
+            "notification": "",
+            "dnd-none": "",
+            "dnd-notification": ""
+        },
+        "return-type": "json",
+        "exec": "~/.config/waybar/scripts/swaync_count.sh",
+        "on-click": "swaync-client --toggle-panel",
+        "on-click-right": "swaync-client -d -sw",
+        "escape": true,
+        "tooltip": true
     },
 
 
@@ -249,7 +242,7 @@
 
 
     "network": {
-        "interface": "wlan0",
+        "interface": "wl*",
         "format-wifi": "{icon}",
         "format-ethernet": "󰈀 LAN",
         "format-disconnected": "󰖪",
