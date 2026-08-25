@@ -221,7 +221,7 @@
         }
     },
     "custom/swaync": {
-        "format": "{icon}{text}",
+        "format": "{icon}<sup>{text}</sup>",
         "format-icons": {
             "none": "",
             "notification": "",
