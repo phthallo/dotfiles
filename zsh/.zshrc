@@ -29,9 +29,25 @@ if [ -d "${HOME}/.local/bin" ] && [[ ":${PATH}:" != *":${HOME}/.local/bin:"* ]];
     PATH="${HOME}/.local/bin:${PATH}"
 fi
 
+# Add ~/bin to PATH. RubyGems installs gem executables here
+# (`gem env` -> EXECUTABLE DIRECTORY), so without this every `gem install`
+# lands a binary that nothing on the PATH can find.
+if [ -d "${HOME}/bin" ] && [[ ":${PATH}:" != *":${HOME}/bin:"* ]]; then
+    PATH="${HOME}/bin:${PATH}"
+fi
+
 # bun completions
-[ -s "/home/phthallo/.bun/_bun" ] && source "/home/phthallo/.bun/_bun"
+[ -s "${HOME}/.bun/_bun" ] && source "${HOME}/.bun/_bun"
 
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
+export PATH="$HOME/.opencode/bin:$PATH"
+
+# pnpm
+export PNPM_HOME="${HOME}/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME/bin:"*) ;;
+  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
+esac
+# pnpm end
