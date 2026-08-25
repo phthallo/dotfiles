@@ -125,7 +125,7 @@ run sudo dnf install -y make gcc golang glib2-devel cairo-devel \
     cairo-gobject-devel gobject-introspection-devel atk-devel gdk-pixbuf2-devel \
     python3-gobject-devel pango-devel gtk3-devel gtk-layer-shell-devel \
     pulseaudio-libs pulseaudio-libs-devel cxxopts jq pkgconf-pkg-config \
-    git curl wget unzip flatpak meson ninja-build fw-ectool \
+    git curl wget unzip flatpak meson ninja-build fw-ectool btop \
     stow starship wlogout dolphin flameshot waybar hyprpaper zsh vim blueman \
     fastfetch SwayNotificationCenter
 

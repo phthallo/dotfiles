@@ -75,7 +75,6 @@ button {
 
 /* menu pannel */
 #custom-arch,
-#custom-powerprofile,
 #custom-themeswitcher {
   padding-right: 10px;
   padding-left: 5px;
@@ -85,10 +84,6 @@ button {
 
 #custom-arch:hover {
   color: @color1;
-}
-
-#custom-powerprofile:hover {
-  color: @color1
 }
 
 #custom-themeswitcher:hover {
@@ -153,7 +148,6 @@ button {
 #battery,
 #cpu,
 #memory,
-#custom-clipboard,
 #custom-bluetooth,
 #network {
   padding: 0 10px;
@@ -162,7 +156,6 @@ button {
 #clock:hover,
 #battery:hover,
 #custom-cpu:hover,
-#custom-clipboard:hover,
 #custom-bluetooth:hover,
 #network:hover,
 #idle_inhibitor:hover,
@@ -174,10 +167,6 @@ button {
 
 #idle_inhibitor {
   padding: 0 10px 0 0;
-}
-
-#custom-powerprofile {
-  padding: 0 8px 0 4px;
 }
 
 /* Remaining Modules */
