@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# satty 0.20 on GTK 4.20 draws every toolbar button as a broken-image glyph.
+#
+# Three separate breakages, all worked around here without touching /usr:
+#   1. satty ships its icons in an embedded gresource under
+#      /com/gabm/satty/icons/scalable/actions/, but GTK 4.20 only scans
+#      <size>/apps/ when it walks a registered resource path, so none of the
+#      22 icons are ever found.
+#   2. satty's annotation-size dialog asks for edit-reset-symbolic, which
+#      adwaita-icon-theme 49 removed. breeze still ships it.
+#   3. the Fedora package installs its app icon to /usr/share/hicolor/... -
+#      missing the icons/ component, so no lookup can see it.
+#
+# Re-run after a satty upgrade; it is idempotent.
+set -euo pipefail
+
+dest=${XDG_DATA_HOME:-$HOME/.local/share}/icons/hicolor/scalable/apps
+bin=$(command -v satty)
+mkdir -p -- "$dest"
+
+# The bundle is a GVDB blob baked into the ELF. Find its magic and slice from
+# there to EOF - gvdb reads by offset, so trailing bytes are harmless.
+tmp=$(mktemp --suffix=.gresource)
+trap 'rm -f "$tmp"' EXIT
+python3 - "$bin" "$tmp" <<'PY'
+import sys
+data = open(sys.argv[1], 'rb').read()
+i = data.find(b'GVariant\0\0\0\0\0\0\0\0')
+if i < 0:
+    sys.exit('no gresource bundle found in ' + sys.argv[1])
+open(sys.argv[2], 'wb').write(data[i:])
+PY
+
+n=0
+while read -r res; do
+  case $res in */actions/*.svg)
+    gresource extract "$tmp" "$res" > "$dest/${res##*/}"
+    n=$((n + 1)) ;;
+  esac
+done < <(gresource list "$tmp")
+
+reset=/usr/share/icons/breeze/actions/22/edit-reset-symbolic.svg
+[ -f "$reset" ] && cp -- "$reset" "$dest/"
+[ -f /usr/share/hicolor/scalable/apps/satty.svg ] &&
+  cp -- /usr/share/hicolor/scalable/apps/satty.svg "$dest/"
+
+gtk-update-icon-cache -f -t "$(dirname -- "$(dirname -- "$dest")")"
+printf 'installed %d satty icons into %s\n' "$n" "$dest"

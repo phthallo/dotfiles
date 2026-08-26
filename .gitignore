@@ -3,3 +3,21 @@ vim/.viminfo
 bash/.bash_history
 
 hyprspace/
+
+# theme-switcher wallpapers: ~264 MB of images, symlinked into place by stow
+# but deliberately not committed. A fresh clone gets the themes and templates;
+# drop images into config/.config/theme-switcher/themes/<name>/wallpapers/.
+config/.config/theme-switcher/themes/*/wallpapers/
+config/.config/theme-switcher/themes/*/current-wallpaper.txt
+config/.config/theme-switcher/apply-theme.sh.bak
+
+# Pre-edit copies of upstream templates, kept locally as a reference for what
+# each one looked like before it was regenerated from the live config.
+config/.config/theme-switcher/templates/**/*.april.bak
+
+# Rendered by apply-theme.sh, not authored. These carry absolute paths that no
+# config format can express portably (GTK CSS url()/@import expand neither
+# $HOME nor ~), so they are machine-specific by nature. install.sh reruns
+# apply-theme.sh on a fresh clone to regenerate them.
+config/.config/theme-switcher/generated/
+config/.config/hypr/generated-theme.conf

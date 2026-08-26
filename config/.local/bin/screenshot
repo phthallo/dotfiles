@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+# grim + slurp screenshot. Clipboard is the destination; disk is opt-in.
+#
+#   screenshot              select a region -> clipboard, offers Edit / Save / Save as
+#   screenshot full         whole screen    -> clipboard, offers Edit / Save / Save as
+#   screenshot --save       skip the prompt, write straight to ~/Pictures
+#   screenshot --save-as    skip the prompt, open the location picker
+#   screenshot --edit       skip the prompt, open it in satty to annotate
+#
+# grim is a native wlroots client, so fractional scaling is handled properly:
+# slurp reports the selection in LOGICAL pixels and grim -g renders it at the
+# output's real scale, so a 400x300 selection on this 1.33334 display lands as
+# 533x400 actual pixels rather than being resampled.
+set -euo pipefail
+
+mode=region
+after=prompt
+for arg in "$@"; do
+  case $arg in
+    region|full)  mode=$arg ;;
+    -s|--save)    after=save ;;
+    -S|--save-as) after=saveas ;;
+    -e|--edit)    after=edit ;;
+    -h|--help)    sed -n '2,8p' "$0"; exit 0 ;;
+    *) printf 'unknown argument: %s\n' "$arg" >&2; exit 2 ;;
+  esac
+done
+
+tmp=$(mktemp --suffix=.png)
+trap 'rm -f "$tmp"' EXIT
+
+case $mode in
+  region)
+    # slurp exits non-zero on Esc or a click with no drag. That is a cancel,
+    # not a failure, so leave quietly without a notification.
+    geom=$(slurp -d) || exit 0
+    [ -n "$geom" ] || exit 0
+    grim -g "$geom" "$tmp"
+    ;;
+  full)
+    grim "$tmp"
+    ;;
+esac
+
+wl-copy --type image/png < "$tmp"
+
+stamp() { date +%Y-%m-%d_%H-%M-%S; }
+pictures() { printf '%s' "${XDG_PICTURES_DIR:-$HOME/Pictures}"; }
+
+place() {  # $1 = destination path
+  local dest=$1
+  mkdir -p -- "$(dirname -- "$dest")"
+  cp -- "$tmp" "$dest"
+  chmod 644 -- "$dest"   # mktemp made it 0600; a screenshot is not a secret
+  notify-send -a screenshot -i "$dest" "Screenshot saved" "${dest/#$HOME/~}"
+}
+
+save_to_pictures() { place "$(pictures)/$(stamp).png"; }
+
+save_as() {
+  local dest dir
+  dir=$(pictures)
+  mkdir -p -- "$dir"
+  # Run from the target directory and pass a bare basename. Handing GTK a full
+  # path through --filename is inconsistent: some versions take it as the
+  # folder and drop the name. cd + basename sets both unambiguously.
+  # zenity exits non-zero when the dialog is cancelled - not an error.
+  dest=$(cd "$dir" && zenity --file-selection --save \
+           --title="Save screenshot" \
+           --filename="$(stamp).png" \
+           --file-filter='PNG images | *.png' \
+           --file-filter='All files | *' 2>/dev/null) || return 0
+  [ -n "$dest" ] || return 0
+  case $dest in /*) ;; *) dest=$dir/$dest ;; esac
+  case $dest in *.png|*.PNG) ;; *) dest=$dest.png ;; esac
+  place "$dest"
+}
+
+edit_in_satty() {
+  # satty writes to --output-filename only when you actually hit save, and
+  # --copy-command routes its copy action through wl-copy so Ctrl+C lands in
+  # the same clipboard the bare screenshot already used. --early-exit closes it
+  # once you have saved or copied.
+  satty --filename "$tmp" \
+        --output-filename "$(pictures)/$(stamp).png" \
+        --copy-command wl-copy \
+        --early-exit
+}
+
+case $after in
+  save)   save_to_pictures ;;
+  saveas) save_as ;;
+  edit)   edit_in_satty ;;
+  prompt)
+    # -A implies --wait, so this lingers until a button is pressed or the
+    # notification is dismissed. Harmless: the keybind backgrounds the whole
+    # script, and wl-copy has already daemonised with its own copy of the image.
+    action=$(notify-send -a screenshot -i "$tmp" \
+               -A edit=Edit -A save=Save -A saveas="Save as…" "Screenshot copied")
+    case $action in
+      edit)   edit_in_satty ;;
+      save)   save_to_pictures ;;
+      saveas) save_as ;;
+    esac
+    ;;
+esac

@@ -1,14 +1,26 @@
+/* Shared palette first - GTK requires @import ahead of every rule. The same
+   file is imported by wofi (the theme picker), so the panel and the picker
+   cannot drift apart: both take their surfaces, text and border from these
+   tokens. Anything else that wants to match imports it the same way. */
+@import url("file:///home/phthallo/.config/theme-switcher/generated/chrome.css");
+
 /* =========================
    THEME COLORS
-   ========================= */
+   =========================
+   Local aliases onto the shared tokens. The ~700 rules below were written
+   against the cc_* names, so they are kept as a thin mapping layer rather
+   than renamed throughout. */
 
-@define-color cc_bg #282828;
-@define-color cc_fg #ebdbb2;
-@define-color cc_accent #d79921;
-@define-color cc_muted #d79921;
-/* the first stop of col.active_border in hyprland.conf, so the panel is
-   outlined like a focused window */
-@define-color cc_border #98971a;
+@define-color cc_bg @chrome_bg;
+@define-color cc_fg @chrome_fg;
+@define-color cc_accent @chrome_accent;
+@define-color cc_muted @chrome_accent_alt;
+/* theme-switcher renders hyprland's col.active_border from this same value,
+   so the panel stays outlined like a focused window whichever theme is on.
+   The live file is currently pinned to #98971a - the green first stop of the
+   hand-written gradient in hyprland.conf - so applying a theme will move it
+   to that theme's border_active (gold, under gruvbox). */
+@define-color cc_border @chrome_border;
 
 /* =========================
    FONT
@@ -29,6 +41,28 @@
    12px. 999px is reserved for things that are meant to read as pills or
    hairlines (slider troughs and handles, close buttons, the scrollbar).
    0 is reserved for the 1px divider rules, which GTK would otherwise curl. */
+
+/* =========================
+   OPACITY
+   =========================
+   Stock swaync paints every notification card at
+   rgba(var(--noti-bg), var(--noti-bg-alpha)) with the alpha at 0.8, and tints
+   the focused state with another translucent colour. The rules further down
+   only cover cards inside the control center, so the floating popups kept
+   falling through to those defaults and showing the desktop through them.
+   Pinning the alphas to 1 fixes both surfaces at the source. */
+
+:root {
+  --noti-bg-alpha: 1;
+  --noti-bg-focus: rgb(68, 68, 68);
+  --cc-bg: @cc_bg;
+}
+
+/* Popups are not inside .control-center, so they need the card colour spelled
+   out again to match the ones in the panel. */
+.floating-notifications .notification-row .notification-background .notification {
+  background: shade(@cc_bg, 1.08);
+}
 
 /* =========================
    CONTROL CENTER PANEL

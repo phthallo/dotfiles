@@ -112,6 +112,7 @@ run sudo dnf upgrade --refresh -y
 enable_coprs() {
     sudo dnf copr enable -y erikreider/SwayNotificationCenter &&
     sudo dnf copr enable -y atim/starship &&
+    sudo dnf copr enable -y sdegler/hyprland &&
     sudo dnf copr enable -y rowanfr/fw-ectool
 }
 step "Enabling Copr repositories" "Third-party builds of SwayNC, starship, and the Framework EC tool."
@@ -126,8 +127,10 @@ run sudo dnf install -y make gcc golang glib2-devel cairo-devel \
     python3-gobject-devel pango-devel gtk3-devel gtk-layer-shell-devel \
     pulseaudio-libs pulseaudio-libs-devel cxxopts jq pkgconf-pkg-config \
     git curl wget unzip flatpak meson ninja-build fw-ectool btop \
-    stow starship wlogout dolphin flameshot waybar hyprpaper zsh vim blueman \
-    fastfetch SwayNotificationCenter
+    stow starship dolphin waybar hyprpaper zsh vim blueman \
+    fastfetch SwayNotificationCenter \
+    grim slurp wl-clipboard satty zenity \
+    cargo rust libadwaita-devel librsvg2-devel gtk4-devel
 
 step "Setting zsh as the login shell"
 run chsh -s "$(command -v zsh)"
@@ -172,6 +175,59 @@ build_pamixer() {
 step "Building pamixer" "Waybar's volume module shells out to this."
 run build_pamixer
 rm -rf /tmp/pamixer
+
+build_wleave() {
+    # wleave replaces wlogout: same layout format, actively maintained, GTK4.
+    # gtk4-layer-shell-devel is installed on its own because on f43 it ships a
+    # file already owned by the base gtk4-layer-shell package; --skip-broken
+    # keeps that conflict from taking the build down with it. If it does fail,
+    # the build below is the only thing that needs it.
+    sudo dnf install -y gtk4-layer-shell-devel || \
+        warn "gtk4-layer-shell-devel failed to install - wleave will not build"
+    rm -rf /tmp/wleave &&
+    git clone https://github.com/AMNatty/wleave /tmp/wleave &&
+    cargo build --release --all-features --manifest-path /tmp/wleave/Cargo.toml &&
+    sudo install -Dm755 /tmp/wleave/target/release/wleave /usr/local/bin/wleave &&
+    # Note: wleave looks for layout.json in every config dir before it tries
+    # the wlogout-style "layout" anywhere, so this default would shadow
+    # ~/.config/wlogout/layout. The waybar and swaync launchers pass
+    # -l ~/.config/wlogout/layout explicitly to settle it.
+    sudo install -Dm644 /tmp/wleave/layout.json /usr/local/etc/wleave/layout.json &&
+    sudo install -Dm644 /tmp/wleave/style.css /usr/local/etc/wleave/style.css &&
+    sudo install -Dm644 /tmp/wleave/wleave.svg \
+        /usr/local/share/icons/hicolor/scalable/apps/wleave.svg &&
+    sudo install -Dm644 /tmp/wleave/sh.natty.Wleave.desktop \
+        /usr/local/share/applications/sh.natty.Wleave.desktop &&
+    for i in /tmp/wleave/icons/*.svg; do
+        sudo install -Dm644 "$i" "/usr/local/share/wleave/icons/$(basename "$i")" || return 1
+    done
+}
+step "Building wleave" "The logout menu. Reads the wlogout config in ~/.config/wlogout."
+run build_wleave
+rm -rf /tmp/wleave
+
+step "Fixing satty's icons" "satty ships them under scalable/actions, which GTK 4.20 never scans."
+run "$REPO_DIR/config/.local/bin/satty-icons-fix"
+
+fetch_theme_wallpapers() {
+    # theme-switcher itself lives in this repo under config/.config/theme-switcher,
+    # but its ~260 MB of wallpapers are gitignored. Pull those from upstream and
+    # copy in only the images - every template here is customised and must win.
+    local ts="$REPO_DIR/config/.config/theme-switcher/themes"
+    [ -d "$ts" ] || { warn "no theme-switcher themes directory; skipping wallpapers"; return 0; }
+    rm -rf /tmp/theme-switcher &&
+    git clone --depth 1 https://github.com/enes-less/theme-switcher /tmp/theme-switcher &&
+    for d in /tmp/theme-switcher/theme-switcher/themes/*/wallpapers; do
+        [ -d "$d" ] || continue
+        theme=$(basename "$(dirname "$d")")
+        [ -d "$ts/$theme" ] || continue
+        mkdir -p "$ts/$theme/wallpapers" &&
+        cp -rn "$d/." "$ts/$theme/wallpapers/" || return 1
+    done
+}
+step "Fetching theme-switcher wallpapers" "From enes-less/theme-switcher, whose engine this config is based on."
+run fetch_theme_wallpapers
+rm -rf /tmp/theme-switcher
 
 build_nwg_look() {
     rm -rf /tmp/nwg-look &&
@@ -245,6 +301,28 @@ step "Linking the configuration" "stow symlinks config/ into ~/.config."
 warn "stow will not overwrite real files - if this fails, move the ~/.config"
 warn "entries it names out of the way, then re-run: stow -d $REPO_DIR config"
 run stow -d "$REPO_DIR" config
+
+apply_current_theme() {
+    # Several generated stylesheets carry absolute paths that no config format
+    # can express portably: GTK CSS url() and @import do not expand $HOME or ~,
+    # so swaync/style.css, wlogout/style.css and the shared chrome.css all bake
+    # in a real path. Those files are committed, which means a fresh clone on a
+    # machine with a different username inherits the previous one - broken
+    # wleave icons and a dead @import until the user happens to switch themes.
+    #
+    # Re-rendering once here rewrites every one of them from this machine's
+    # $HOME. It is also what puts starship.toml, kitty/theme.conf and
+    # generated-theme.conf on disk for the first time; none of those are
+    # tracked, so without this step they simply do not exist.
+    local ts="$HOME/.config/theme-switcher"
+    [ -x "$ts/apply-theme.sh" ] || { warn "theme-switcher not linked; skipping"; return 0; }
+    local theme
+    theme=$(jq -r '.theme // empty' "$ts/current-theme.json" 2>/dev/null)
+    [ -n "$theme" ] && [ -d "$ts/themes/$theme" ] || theme=gruvbox
+    "$ts/apply-theme.sh" "$theme"
+}
+step "Rendering the theme" "Rewrites the generated stylesheets against this machine's \$HOME."
+run apply_current_theme
 hyprctl reload >/dev/null 2>&1 && ok "Hyprland reloaded"
 
 step "Building the Hyprspace overview plugin" "Pins itself to the Hyprspace commit matching your Hyprland version."

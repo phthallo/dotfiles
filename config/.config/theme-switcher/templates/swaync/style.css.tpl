@@ -1,0 +1,578 @@
+/* Shared palette first - GTK requires @import ahead of every rule. The same
+   file is imported by wofi (the theme picker), so the panel and the picker
+   cannot drift apart: both take their surfaces, text and border from these
+   tokens. Anything else that wants to match imports it the same way. */
+@import url("file://{{chrome_css}}");
+
+/* =========================
+   THEME COLORS
+   =========================
+   Local aliases onto the shared tokens. The ~700 rules below were written
+   against the cc_* names, so they are kept as a thin mapping layer rather
+   than renamed throughout. */
+
+@define-color cc_bg @chrome_bg;
+@define-color cc_fg @chrome_fg;
+@define-color cc_accent @chrome_accent;
+@define-color cc_muted @chrome_accent_alt;
+/* theme-switcher renders hyprland's col.active_border from this same value,
+   so the panel stays outlined like a focused window whichever theme is on.
+   The live file is currently pinned to #98971a - the green first stop of the
+   hand-written gradient in hyprland.conf - so applying a theme will move it
+   to that theme's border_active (gold, under gruvbox). */
+@define-color cc_border @chrome_border;
+
+/* =========================
+   FONT
+   =========================
+   Same family and size waybar uses, so the bar and the panel it opens read
+   as one surface. The Nerd Font build carries the glyphs used for the button
+   grid and the slider icons, so it has to be the Nerd Font variant, not
+   plain 0xProto. Scoped with * because this stylesheet only ever applies to
+   swaync's own windows - the control center and the floating popups. */
+
+* {
+  font-family: "0xProto Nerd Font", "0xProto", monospace;
+  font-size: 15px;
+}
+
+/* Corner rhythm: every card-shaped surface - the panel, notification cards,
+   grid buttons, the Clear button, the mpris player and its album art - is
+   12px. 999px is reserved for things that are meant to read as pills or
+   hairlines (slider troughs and handles, close buttons, the scrollbar).
+   0 is reserved for the 1px divider rules, which GTK would otherwise curl. */
+
+/* =========================
+   OPACITY
+   =========================
+   Stock swaync paints every notification card at
+   rgba(var(--noti-bg), var(--noti-bg-alpha)) with the alpha at 0.8, and tints
+   the focused state with another translucent colour. The rules further down
+   only cover cards inside the control center, so the floating popups kept
+   falling through to those defaults and showing the desktop through them.
+   Pinning the alphas to 1 fixes both surfaces at the source. */
+
+:root {
+  --noti-bg-alpha: 1;
+  --noti-bg-focus: rgb(68, 68, 68);
+  --cc-bg: @cc_bg;
+}
+
+/* Popups are not inside .control-center, so they need the card colour spelled
+   out again to match the ones in the panel. */
+.floating-notifications .notification-row .notification-background .notification {
+  background: shade(@cc_bg, 1.08);
+}
+
+/* =========================
+   CONTROL CENTER PANEL
+   ========================= */
+
+.control-center {
+  background: @cc_bg;
+  color: @cc_fg;
+  border: 2px solid @cc_border;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+/* =========================
+   WIDGET BLOCKS
+   ========================= */
+
+/* Spacing rhythm, used everywhere below:
+     16px  panel gutter (.control-center padding)
+     14px  between widget blocks
+      4px  between sibling cards / grid buttons
+   Nothing adds its own horizontal margin, so every block starts and ends
+   on the same 12px gutter. */
+.widget {
+  margin: 0 0 14px 0;
+  padding: 0;
+  background: transparent;
+}
+
+.widget:last-child {
+  margin-bottom: 0;
+}
+
+.widget-title,
+.widget-dnd,
+.widget-label {
+  color: @cc_fg;
+  background: transparent;
+}
+
+/* =========================
+   BUTTON GRID
+   ========================= */
+
+.cc_controls > flowbox {
+  background: transparent;
+  margin: -4px; /* cancels the 4px on each button so the grid is flush */
+}
+
+.cc_controls > flowbox > flowboxchild {
+  background: transparent;
+  border-radius: 12px;
+}
+
+.cc_controls > flowbox > flowboxchild > button {
+  background: shade(@cc_bg, 1.10);
+  color: alpha(@cc_fg, 0.80);
+  border: none;
+  border-radius: 12px;
+  padding: 13px 0;
+  margin: 4px;
+  font-size: 16px;
+  min-width: 0;
+  transition: 120ms;
+  box-shadow: none;
+}
+
+.cc_controls > flowbox > flowboxchild > button:hover {
+  background: shade(@cc_bg, 1.35);
+  color: @cc_fg;
+}
+
+/* The seven plain actions have no state, so they sit at the normal 0.80.
+   The three toggles read their state instead: dim with a faint ring when off,
+   solid gold when on. That gives three distinguishable weights in the grid. */
+.cc_controls > flowbox > flowboxchild > button.toggle {
+  color: alpha(@cc_fg, 0.45);
+  box-shadow: inset 0 0 0 1px alpha(@cc_fg, 0.12);
+}
+
+.cc_controls > flowbox > flowboxchild > button.toggle:hover {
+  color: alpha(@cc_fg, 0.85);
+  box-shadow: inset 0 0 0 1px alpha(@cc_fg, 0.25);
+}
+
+.cc_controls > flowbox > flowboxchild > button.toggle:checked,
+.cc_controls > flowbox > flowboxchild > button.toggle.active {
+  background: @cc_accent;
+  color: @cc_bg;
+  box-shadow: none;
+}
+
+.cc_controls > flowbox > flowboxchild > button.toggle:checked:hover,
+.cc_controls > flowbox > flowboxchild > button.toggle.active:hover {
+  background: shade(@cc_accent, 1.12);
+  color: @cc_bg;
+  box-shadow: none;
+}
+
+/* =========================
+   SLIDERS
+   =========================
+   Icon in front, hairline track, ring handle. The label text is set to a
+   nerd-font glyph in config.json, so this only has to size and colour it. */
+
+.widget-volume,
+.widget-backlight,
+.cc_brightness {
+  background: transparent;
+  padding: 0;
+}
+
+/* the glyph sitting in front of the track */
+.cc_brightness > box > label {
+  color: alpha(@cc_fg, 0.80);
+  font-size: 15px;
+  margin-right: 12px;
+  min-width: 18px;
+}
+
+/* Volume has no static label - its glyph lives on the expand button instead
+   (see config.json) so that clicking the icon opens the per-app sliders.
+   swaync packs that button last in the row and GTK4 CSS cannot reorder box
+   children, so the icon is dragged into place with a transform, which moves
+   the paint without touching layout. Distances assume control-center-width
+   420; they need revisiting if that changes. */
+.widget-volume > box > label {
+  min-width: 18px;
+  margin-right: 12px;
+  font-size: 0;
+}
+
+/* Pull the volume track back onto the same start x as the brightness track.
+   Direct child only - a bare ".widget-volume scale" also matches every
+   per-app row, dragging those sliders on top of their app icons. */
+.widget-volume > box > scale {
+  margin-left: -22px;
+}
+
+.widget-volume scale trough,
+.widget-backlight scale trough,
+.cc_brightness scale trough {
+  background: alpha(@cc_fg, 0.22);
+  border: none;
+  border-radius: 999px;
+  min-height: 3px;
+}
+
+.widget-volume scale highlight,
+.widget-backlight scale highlight,
+.cc_brightness scale highlight {
+  background: @cc_accent;
+  border: none;
+  border-radius: 999px;
+  min-height: 3px;
+}
+
+/* hollow ring handle, panel-coloured centre */
+.widget-volume scale slider,
+.widget-backlight scale slider,
+.cc_brightness scale slider {
+  background: @cc_bg;
+  border: 2px solid @cc_accent;
+  border-radius: 999px;
+  min-width: 13px;
+  min-height: 13px;
+  margin: -7px;
+  box-shadow: none;
+  transition: 120ms;
+}
+
+.widget-volume scale slider:hover,
+.widget-backlight scale slider:hover,
+.cc_brightness scale slider:hover {
+  border-color: @cc_fg;
+}
+
+/* the volume glyph, doubling as the per-app expander */
+.widget-volume > box > button {
+  background: transparent;
+  color: alpha(@cc_fg, 0.80);
+  border: none;
+  box-shadow: none;
+  border-radius: 999px;
+  font-size: 15px;
+  padding: 0;
+  margin-right: -26px; /* give the slot back to the scale */
+  min-width: 18px;
+  min-height: 0;
+  transform: translateX(-426px);
+  transition: 120ms;
+}
+
+.widget-volume > box > button:hover {
+  background: transparent;
+  color: @cc_accent;
+}
+
+/* =========================
+   NOTIFICATIONS
+   ========================= */
+
+/* GTK draws a blue focus ring on whatever row has keyboard focus. It is the
+   one bit of stock Adwaita that survives this theme, so remove it. */
+.control-center *:focus,
+.control-center *:focus-visible,
+.notification-row:focus,
+.notification-row:focus-visible,
+.notification-row .notification-background .notification:focus {
+  outline: none;
+  box-shadow: none;
+  border-color: transparent;
+}
+
+/* The list holds a fixed floor so the panel does not jump height when a
+   single notification arrives or is dismissed, grows to a ceiling as they
+   stack up, and scrolls inside that ceiling once they overflow it. */
+.control-center .control-center-list,
+.control-center .control-center-list scrolledwindow {
+  min-height: 200px;
+  max-height: 460px;
+}
+
+/* The "No Notifications" placeholder gets its own, taller floor, so the empty
+   panel is roomy without raising the floor once real notifications stack up. */
+.control-center .control-center-list-placeholder {
+  min-height: 0;
+  padding: 66px 0;
+  opacity: 0.45;
+}
+
+.control-center .control-center-list scrolledwindow scrollbar {
+  background: transparent;
+  border: none;
+  margin-left: 4px;
+}
+
+.control-center .control-center-list scrolledwindow scrollbar slider {
+  background: alpha(@cc_fg, 0.22);
+  border: none;
+  border-radius: 999px;
+  min-width: 5px;
+}
+
+.control-center .control-center-list scrolledwindow scrollbar slider:hover {
+  background: alpha(@cc_fg, 0.40);
+}
+
+.control-center .control-center-list,
+.control-center .control-center-list scrolledwindow,
+.control-center .control-center-list viewport,
+.control-center .control-center-list box,
+.control-center .control-center-list row {
+  background: transparent;
+  box-shadow: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* notification card */
+/* stock swaync puts "padding: 6px 12px" here, which inset every card 12px
+   further than the sliders and the title. Vertical only. */
+.notification-row .notification-background {
+  padding: 4px 0;
+}
+
+.control-center .control-center-list .notification {
+  background: shade(@cc_bg, 1.08);
+  border-radius: 12px;
+  padding: 4px 10px;
+  margin: 0;
+  box-shadow: none;
+}
+
+.control-center .control-center-list .notification box,
+.control-center .control-center-list .notification grid,
+.control-center .control-center-list .notification row,
+.control-center .control-center-list .notification .notification-content,
+.control-center .control-center-list .notification .content,
+.control-center .control-center-list .notification image {
+  background: transparent;
+  box-shadow: none;
+}
+
+.notification-row .notification-background .notification .notification-default-action {
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.notification-row .notification-background .notification .notification-default-action .notification-content .text-box .summary {
+  color: @cc_fg;
+  font-weight: 700;
+  background: transparent;
+  padding-top: 4px; 
+}
+
+.notification-row .notification-background .notification .notification-default-action .notification-content .text-box .body {
+  color: @cc_muted;
+  background: transparent;
+}
+
+/* =========================
+   MPRIS / ALBUM ART
+   =========================
+   swaync ships this as a blurred album-art backdrop under a dark tint.
+   We strip both so the player sits flat on the panel: art, two lines of
+   text, a centred row of transport buttons. Nothing else. */
+
+:root {
+  --mpris-album-art-icon-size: 64px;
+}
+
+.widget-mpris {
+  padding: 10px 0 0 0;
+  background: transparent;
+  border-top: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 0;
+}
+
+.widget-mpris .widget-mpris-player {
+  margin: 0;
+  border-radius: 12px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+/* Album art as the backdrop, blurred past recognition and faded back toward
+   the panel colour so it reads as a tint rather than a picture. */
+.widget-mpris .widget-mpris-player .mpris-background {
+  filter: blur(34px) saturate(1.3);
+  opacity: 0.40;
+}
+
+/* scrim over the blur so the text stays readable on bright covers */
+.widget-mpris .widget-mpris-player .mpris-overlay {
+  background-color: rgba(0, 0, 0, 0.55);
+  padding: 12px 14px 14px 14px;
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay .widget-mpris-album-art {
+  border-radius: 12px;
+  box-shadow: none;
+  margin-right: 14px;
+  -gtk-icon-size: var(--mpris-album-art-icon-size);
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay .widget-mpris-title {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay .widget-mpris-subtitle {
+  color: alpha(#ffffff, 0.75);
+  font-weight: 400;
+  font-size: 0.95rem;
+}
+
+/* Transport row. GTK4 CSS has no space-between, so the spread comes from
+   generous equal side margins on each button; the top margin is what pushes
+   the whole row clear of the title and artist. */
+.widget-mpris .widget-mpris-player .mpris-overlay > box > button {
+  background: transparent;
+  color: alpha(#ffffff, 0.65);
+  border: none;
+  box-shadow: none;
+  border-radius: 999px;
+  padding: 6px;
+  margin: 16px 18px 0 18px;
+  min-width: 0;
+  min-height: 0;
+  transition: 120ms;
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay > box > button:hover {
+  background-color: alpha(#ffffff, 0.16);
+  color: #ffffff;
+}
+
+/* the middle child is play/pause - give it the raised disc */
+.widget-mpris .widget-mpris-player .mpris-overlay > box > button:nth-child(3) {
+  background-color: alpha(#ffffff, 0.14);
+  color: #ffffff;
+  padding: 10px 12px;
+  margin-left: 14px;
+  margin-right: 14px;
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay > box > button:nth-child(3):hover {
+  background-color: alpha(#ffffff, 0.26);
+}
+
+/* carousel arrows either side - collapsed away entirely. GTK4 CSS has no
+   display:none, so zero the label out and take its box down to nothing. */
+.widget-mpris > box > button {
+  opacity: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+  font-size: 0;
+  -gtk-icon-size: 0;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+}
+
+/* =========================
+   TITLE + CLEAR ALL
+   ========================= */
+
+/* only the heading itself, not the button's inner label */
+.widget-title > label,
+.control-center .notif_title > label {
+  font-size: 21px;
+  font-weight: 700;
+  padding-bottom: 4px;
+  background: transparent;
+}
+
+/* border-radius: 0 so the 1px rule stays a straight line - GTK curls the
+   ends of a border to follow any radius on the box that carries it. */
+.widget-title,
+.control-center .notif_title {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 0;
+  padding-bottom: 6px;
+  background: transparent;
+}
+
+.widget-title > button,
+.control-center .notif_title > button {
+  background: shade(@cc_bg, 1.10);
+  color: @cc_fg;
+  border: none;
+  border-radius: 12px;
+  padding: 4px 14px;
+  font-size: 14px;
+  box-shadow: none;
+  transition: 120ms;
+}
+
+.widget-title > button:hover,
+.control-center .notif_title > button:hover {
+  background: @cc_accent;
+  color: @cc_bg;
+}
+
+/* =========================
+   GROUPED NOTIFICATIONS
+   =========================
+   Several notifications from one app collapse into a stack with an app
+   icon + name header. Collapsed, that header is the only thing identifying
+   the group, so it stays full size. Expanded, the notifications speak for
+   themselves and the header shrinks out of the way.
+   swaync marks the collapsed state with .not-expanded, so expanded is
+   :not(.not-expanded) - awkward to read, but it is their class name. */
+
+.control-center .notification-group .notification-group-headers,
+.control-center .notification-group .notification-group-buttons {
+  margin: 0; /* stock is "0 16px", which breaks the panel gutter */
+  color: @cc_fg;
+}
+
+.control-center .notification-group .notification-group-headers .notification-group-icon {
+  color: @cc_fg;
+  -gtk-icon-size: 22px;
+  transition: 150ms;
+}
+
+.control-center .notification-group .notification-group-headers .notification-group-header {
+  color: @cc_fg;
+  font-size: 0.95rem;
+  transition: 150ms;
+}
+
+/* expanded: smaller icon, smaller and dimmer app name */
+.control-center .notification-group:not(.not-expanded) .notification-group-headers .notification-group-icon {
+  -gtk-icon-size: 14px;
+  opacity: 0.60;
+}
+
+.control-center .notification-group:not(.not-expanded) .notification-group-headers .notification-group-header {
+  font-size: 0.78rem;
+  opacity: 0.60;
+}
+
+/* =========================
+   CLOSE BUTTON
+   ========================= */
+
+.notification-background .close-button,
+.control-center .notification-group .close-button,
+.notification-group .close-button {
+  background-image: none;
+  background-color: @cc_accent;
+  color: @cc_bg;
+  border-radius: 999px;
+  box-shadow: none;
+  transform: translate(6px, -2px);
+}
+
+.notification-background .close-button image,
+.control-center .notification-group .close-button image,
+.notification-group .close-button image {
+  color: @cc_bg;
+  background: transparent;
+}
+
+.notification-row .notification-background .notification .notification-default-action .notification-content .text-box .time {
+  margin-top: 4px;
+}

@@ -4,14 +4,14 @@
 }
 
 window {
-	background-color: rgba(12, 12, 12, 0.75);
+	background-color: rgba(40,40,40,0.80);
 }
 
 button {
-    border-color: black;
-	text-decoration-color: #FFFFFF;
-    color: #FFFFFF;
-	background-color: rgba(30, 30, 30, 0.9);
+    border-color: #665c54;
+	text-decoration-color: #ebdbb2;
+    color: #ebdbb2;
+	background-color: rgba(60,56,54,0.70);
 	border-style: solid;
 	border-width: 1px;
 	background-repeat: no-repeat;
@@ -22,30 +22,30 @@ button {
 }
 
 button:focus, button:active, button:hover {
-	background-color: rgba(152, 151, 26, 0.7);
+	background-color: rgba(215,153,33,0.70);
 	outline-style: none;
 }
 
 #lock {
-    background-image: image(url("/usr/share/wlogout/icons/lock.png"), url("/usr/local/share/wlogout/icons/lock.png"));
+    background-image: url("/home/phthallo/.config/wlogout/icons/lock.svg");
 }
 
 #logout {
-    background-image: image(url("/usr/share/wlogout/icons/logout.png"), url("/usr/local/share/wlogout/icons/logout.png"));
+    background-image: url("/home/phthallo/.config/wlogout/icons/logout.svg");
 }
 
 #suspend {
-    background-image: image(url("/usr/share/wlogout/icons/suspend.png"), url("/usr/local/share/wlogout/icons/suspend.png"));
+    background-image: url("/home/phthallo/.config/wlogout/icons/suspend.svg");
 }
 
 #hibernate {
-    background-image: image(url("/usr/share/wlogout/icons/hibernate.png"), url("/usr/local/share/wlogout/icons/hibernate.png"));
+    background-image: url("/home/phthallo/.config/wlogout/icons/hibernate.svg");
 }
 
 #shutdown {
-    background-image: image(url("/usr/share/wlogout/icons/shutdown.png"), url("/usr/local/share/wlogout/icons/shutdown.png"));
+    background-image: url("/home/phthallo/.config/wlogout/icons/shutdown.svg");
 }
 
 #reboot {
-    background-image: image(url("/usr/share/wlogout/icons/reboot.png"), url("/usr/local/share/wlogout/icons/reboot.png"));
+    background-image: url("/home/phthallo/.config/wlogout/icons/reboot.svg");
 }

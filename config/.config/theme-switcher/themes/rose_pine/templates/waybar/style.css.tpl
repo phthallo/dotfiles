@@ -1,0 +1,206 @@
+/* colors defined at top for easy configuring */
+/* colors defined at top for easy configuring */
+@define-color background {{bg}};
+@define-color second-background {{surface}};
+@define-color text {{fg}};
+@define-color borders {{orange}};
+@define-color focused {{green_rgba}};
+@define-color focused2 {{fg_dim}};
+@define-color color1 {{blue}};
+@define-color color2 {{lavender}};
+@define-color color3 {{green}};
+@define-color urgent {{red}};
+
+/* font declared */
+* {
+  font-family: "0xProto Nerd Font";
+  font-size: 15px;
+}
+
+#custom-openbracket,
+#custom-closebracket {
+  margin: 0 5px;
+}
+
+/* idk what all this does */
+window#waybar {
+  background-color: transparent;
+  border-bottom: 0;
+  color: @text;
+  transition: background-color 0.5s;
+}
+
+window#waybar.hidden {
+  opacity: 0.2;
+}
+
+window#waybar.empty #window {
+  background-color: transparent;
+}
+
+
+/* configuring the modules */
+.modules-left {
+  margin: 20px 0 0 20px;
+  padding: 0 0 0 10px;
+  background-color: @background;
+  border: 2px solid @focused;
+  border-radius: 7px;
+}
+
+.modules-center {
+  margin: 20px 0 0 0;
+  padding: 0 10px 0 10px;
+  background-color: @background;
+  border: 2px solid @focused;
+  border-radius: 7px;
+}
+
+.modules-right {
+  margin: 20px 20px 0 0;
+  padding: 0 10px 0 10px;
+  background-color: @background;
+  border: 2px solid @focused;
+  border-radius: 7px;
+}
+
+
+/* whats this?? */
+button {
+  border: none;
+}
+
+
+/* left island */
+
+/* menu pannel */
+#custom-arch,
+#custom-themeswitcher {
+  padding-right: 10px;
+  padding-left: 5px;
+  font-size: 15px;
+  border-radius: 8px;
+}
+
+#custom-arch:hover {
+  color: @color1;
+}
+
+#custom-themeswitcher:hover {
+  color: @color1;
+}
+
+/* workspace pannel */
+#workspaces button {
+  min-width: 0;
+  padding: 0 8px 0 8px;
+  background-color: transparent;
+  color: @text;
+  border-radius: 0;
+}
+
+#workspaces button:hover {
+  background-color: @second-background;
+}
+
+#workspaces button.active {
+  color: @focused2;
+  background-color: @second-background;
+}
+
+#workspaces button.urgent {
+  background-color: @urgent;
+}
+
+/* no idea what this does */
+.modules-left>widget:first-child>#workspaces {
+  margin-left: 0;
+}
+
+.modules-right>widget:last-child>#workspaces {
+  margin-right: 0;
+}
+
+/* media player */
+#mpris {
+  margin: 0 0 0 5px;
+  padding: 0 9px;
+  background-color: @background;
+  color: @text;
+}
+
+#mpris.playing {
+  background-color: @color3;
+  border-radius: 2px;
+  color: @background;
+}
+
+
+/* center module  */
+#window {
+  padding: 0 5px;
+}
+
+/* Right Island */
+
+/* module general styles */
+#clock,
+#battery,
+#cpu,
+#memory,
+#custom-bluetooth,
+#network {
+  padding: 0 10px;
+}
+
+#clock:hover,
+#battery:hover,
+#custom-cpu:hover,
+#custom-bluetooth:hover,
+#network:hover,
+#idle_inhibitor:hover,
+#custom-swaync:hover,
+#backlight:hover,
+#wireplumber:hover {
+  color: @color1;
+}
+
+#idle_inhibitor {
+  padding: 0 10px 0 0;
+}
+
+/* Remaining Modules */
+#backlight,
+#wireplumber {
+  padding: 0 5px;
+}
+
+#wireplumber.muted {
+  background-color: @color2;
+}
+
+#custom-swaync {
+  padding: 0 10px 0 5px;
+  font-size: 16px;
+  /* same scale as other icons */
+  color: @text;
+}
+
+#battery.charging,
+#battery.plugged {
+  background-color: @color3;
+  color: @background;
+}
+
+#battery.critical:not(.charging) {
+  background-color: @urgent;
+  color: @text;
+  animation: blink 0.5s steps(12) infinite alternate;
+}
+
+@keyframes blink {
+  to {
+    background-color: @second-background;
+    color: @text;
+  }
+}
