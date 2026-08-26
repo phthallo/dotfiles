@@ -22,35 +22,76 @@
     "buttons-grid#cc_controls",
     "volume#cc_volume",
     "slider#cc_brightness",
-    "label#notif_title",
-    "notifications"
+    "title#notif_title",
+    "notifications",
+    "mpris"
   ],
   "widget-config": {
     "buttons-grid#cc_controls": {
-      "buttons-per-row": 3,
+      "buttons-per-row": 5,
       "actions": [
         {
-          "label": "󰖩 Network",
-          "command": "sh -c 'kitty -e nmtui >/dev/null 2>&1 & disown; swaync-client -cp'"
+          "label": "󰐥",
+          "command": "sh -c 'swaync-client -cp; wlogout >/dev/null 2>&1 & disown'"
         },
         {
-          "label": "󰂯 Bluetooth",
-          "command": "sh -c 'blueman-manager >/dev/null 2>&1 & disown; sleep 0.1; swaync-client -cp'"
+          "label": "󰑓",
+          "command": "sh -c 'swaync-client -cp; wlogout >/dev/null 2>&1 & disown'"
         },
         {
-          "label": "󰖔 Focus",
+          "label": "󰌾",
+          "command": "sh -c 'swaync-client -cp; hyprlock -q >/dev/null 2>&1 & disown'"
+        },
+        {
+          "label": "󰍃",
+          "command": "hyprctl dispatch exit"
+        },
+        {
+          "label": "󰂛",
           "type": "toggle",
-          "command": "sh -c '[[ $SWAYNC_TOGGLE_STATE == true ]] && swaync-client -dn || swaync-client -df'",
-          "update-command": "sh -c '[[ $(swaync-client -D) == \"true\" ]] && echo true || echo false'"
+          "command": "swaync-client -d",
+          "update-command": "sh -c 'swaync-client -D | grep -q true && echo true || echo false'"
+        },
+        {
+          "label": "󰕾",
+          "type": "toggle",
+          "command": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+          "update-command": "sh -c 'wpctl get-volume @DEFAULT_AUDIO_SINK@ | grep -q MUTED && echo true || echo false'"
+        },
+        {
+          "label": "󰍬",
+          "type": "toggle",
+          "command": "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle",
+          "update-command": "sh -c 'wpctl get-volume @DEFAULT_AUDIO_SOURCE@ | grep -q MUTED && echo true || echo false'"
+        },
+        {
+          "label": "󰖩",
+          "type": "toggle",
+          "command": "sh -c 'nmcli -t radio wifi | grep -q ^enabled && nmcli radio wifi off || nmcli radio wifi on'",
+          "update-command": "sh -c 'nmcli -t radio wifi | grep -q ^enabled && echo true || echo false'"
+        },
+        {
+          "label": "󰂯",
+          "type": "toggle",
+          "command": "sh -c 'bluetoothctl show | grep Powered | grep -q yes && bluetoothctl power off >/dev/null || bluetoothctl power on >/dev/null'",
+          "update-command": "sh -c 'bluetoothctl show | grep Powered | grep -q yes && echo true || echo false'"
+        },
+        {
+          "label": "󰄀",
+          "command": "sh -c 'swaync-client -cp; sleep 0.3; QT_QPA_PLATFORM=wayland flameshot gui >/dev/null 2>&1 & disown'"
         }
       ]
     },
     "volume#cc_volume": {
-      "label": "Volume",
-      "show-per-app": false
+      "label": "",
+      "show-per-app": true,
+      "show-per-app-icon": true,
+      "show-per-app-label": false,
+      "expand-button-label": "󰕾",
+      "collapse-button-label": "󰕾"
     },
     "slider#cc_brightness": {
-      "label": "Brightness",
+      "label": "󰃠",
       "min_limit": 0,
       "max_limit": 100,
       "min": 0,
@@ -58,8 +99,10 @@
       "cmd_getter": "~/.config/swaync/scripts/brightness_get.sh",
       "cmd_setter": "~/.config/swaync/scripts/brightness_set.sh $value"
     },
-    "label#notif_title": {
-      "text": "Notifications"
+    "title#notif_title": {
+      "text": "Notifications",
+      "clear-all-button": true,
+      "button-text": "Clear"
     },
     "notifications": {
       "vexpand": false
