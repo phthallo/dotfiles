@@ -50,6 +50,11 @@ Scope {
         screen: root.modelData
         visible: Notifications.panelOpen
         onVisibleChanged: if (visible) show.restart()
+        // The loader above builds this window at the moment the panel opens,
+        // so it is already visible when it is created and onVisibleChanged
+        // never fires for the open that caused it. Without this the first
+        // open of each cycle skipped its animation and snapped into place.
+        Component.onCompleted: if (visible) show.restart()
 
         // Same fade-and-settle as every popup the bar drops down; see
         // Theme.openDuration.

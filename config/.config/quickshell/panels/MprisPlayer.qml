@@ -44,11 +44,21 @@ Item {
             radius: Theme.panelRadius
             color: Theme.bg
 
+            // Decoded at 64px and blown back up, because it is about to be
+            // put through a 34px blur at 40% opacity - nothing survives that
+            // which a thumbnail would not have carried. Without a sourceSize
+            // this decoded the art at whatever the player published, which
+            // for a 3000px cover is 36MB of pixels held for a tint. It also
+            // happens to be the same size the cover below asks for, and Qt
+            // keys its image cache on source *and* size, so the two share one
+            // decode instead of each keeping their own.
             Image {
                 id: art
                 anchors.fill: parent
                 source: root.player?.trackArtUrl ?? ""
                 fillMode: Image.PreserveAspectCrop
+                sourceSize.width: 64
+                sourceSize.height: 64
                 asynchronous: true
                 visible: false
             }

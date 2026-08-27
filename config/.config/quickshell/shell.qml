@@ -1,3 +1,5 @@
+//@ pragma DropExpensiveFonts
+
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
@@ -35,9 +37,26 @@ ShellRoot {
         return Quickshell.screens[0] ?? null;
     }
 
-    NotificationPopups { modelData: root.focusedScreen }
+    // Both are built the first time they are wanted and torn down again
+    // afterwards. Measured on this machine the saving is small - about 1.2MB
+    // off an idle shell - because an unmapped Wayland surface is cheap and
+    // neither tree is large. It is kept anyway because it costs nothing at
+    // runtime and it is the only part of the shell that grows: every future
+    // toast, card and toggle added to these two now costs nothing until
+    // something actually opens them.
+    //
+    // active, not loading: the panel has to exist by the time the frame that
+    // opens it is drawn, and both trees are small enough that building them
+    // on the spot is not a stutter you can see.
+    LazyLoader {
+        active: Notifications.popups.length > 0
+        NotificationPopups { modelData: root.focusedScreen }
+    }
 
-    ControlCenter { modelData: root.focusedScreen }
+    LazyLoader {
+        active: Notifications.panelOpen
+        ControlCenter { modelData: root.focusedScreen }
+    }
 
     // swaync-client's job: something for a keybind (or a test run) to talk to.
     //     qs -p ~/dotfiles/config/.config/quickshell ipc call notifications toggle

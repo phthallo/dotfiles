@@ -15,6 +15,10 @@ Singleton {
     property bool panelOpen: false
     property bool dnd: false
 
+    // How many notifications are kept at once. Each one holds its image
+    // buffer for as long as it is tracked.
+    readonly property int maxTracked: 50
+
     // Everything received this session, newest first. swaync persisted its
     // list across restarts; this does not - a shell reload starts with an
     // empty tray, which is a real behaviour difference and the main thing to
@@ -56,9 +60,11 @@ Singleton {
             // An app stuck in a loop can push notifications faster than
             // anyone clears them, and every tracked one holds an image
             // buffer; drop the oldest past a cap rather than growing until
-            // the shell is swapping.
-            const kept = root.list.slice(0, 99);
-            for (const old of root.list.slice(99))
+            // the shell is swapping. Fifty rather than a hundred: the list
+            // is a scrolling column nobody reads to the bottom of, and the
+            // cap is a memory bound, not a history anyone asked for.
+            const kept = root.list.slice(0, root.maxTracked - 1);
+            for (const old of root.list.slice(root.maxTracked - 1))
                 old.dismiss();
             root.list = [notif, ...kept];
 
