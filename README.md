@@ -20,8 +20,8 @@ Not finished by any means. Also remind me ~~to add setup scripts and~~ to credit
 ## Stuff
 - Distro: Fedora (setup script was written and intended for Fedora) 
 - WM: Hyprland
-- Status bar: Waybar
-- Dock: nwg-dock-hyprland
+- Status bar: Quickshell
+- Dock: Quickshell
 - Terminal emulator: Kitty 
 - Terminal prompt: Starship
 - File manager: Dolphin
@@ -29,7 +29,7 @@ Not finished by any means. Also remind me ~~to add setup scripts and~~ to credit
 - Shell: zsh
 - Launcher: Vicinae
 - Browser: Firefox
-- Logout: wlogout
+- Logout: wleave
 - Multimedia key notifications: Avizo
 - Spicetify[^1]
 - Fastfetch 

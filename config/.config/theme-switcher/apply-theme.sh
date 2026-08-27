@@ -452,49 +452,10 @@ if [[ -f "$KITTY_TPL" ]]; then
   done
 fi
 
-# --------- Waybar (theme-specific layout + colors) ----------
-WAYBAR_DIR="$THEME_PATH/templates/waybar"
-WAYBAR_OUT_DIR="$HOME/.config/waybar"
-WAYBAR_CFG_OUT="$WAYBAR_OUT_DIR/config"
-WAYBAR_STYLE_OUT="$WAYBAR_OUT_DIR/style.css"
-
-if [[ -d "$WAYBAR_DIR" ]]; then
-  mkdir -p "$WAYBAR_OUT_DIR"
-
-  if [[ -f "$WAYBAR_DIR/config" ]]; then
-    cp "$WAYBAR_DIR/config" "$WAYBAR_CFG_OUT"
-  fi
-
-  if [[ -f "$WAYBAR_DIR/style.css.tpl" ]]; then
-    sed \
-      -e "s/{{bg}}/$bg_hex/g" \
-      -e "s/{{fg}}/$fg_hex/g" \
-      -e "s/{{accent}}/$accent_hex/g" \
-      -e "s/{{accent_alt}}/$accent_alt_hex/g" \
-      -e "s/{{green}}/$green_hex/g" \
-      -e "s/{{yellow}}/$yellow_hex/g" \
-      -e "s/{{orange}}/$orange_hex/g" \
-      -e "s/{{blue}}/$blue_hex/g" \
-      -e "s/{{teal}}/$teal_hex/g" \
-      -e "s/{{red}}/$red_hex/g" \
-      -e "s/{{pink}}/$pink_hex/g" \
-      -e "s/{{lavender}}/$lavender_hex/g" \
-      -e "s/{{surface}}/$surface_hex/g" \
-      -e "s/{{surface2}}/$surface2_hex/g" \
-      -e "s/{{bg_alt}}/$bg_alt_hex/g" \
-      -e "s/{{overlay}}/$overlay_hex/g" \
-      -e "s/{{fg_dim}}/$fg_dim_hex/g" \
-      -e "s/{{bg_rgba}}/$bg_rgba/g" \
-      -e "s/{{green_rgba}}/$(hex_to_rgba_css "$green_hex" "0.8")/g" \
-      -e "s/{{border_active}}/${border_active_hex:-$accent_hex}/g" \
-      -e "s/{{font_family}}/$font_family/g" \
-      -e "s/{{font_family_bold}}/$font_family_bold/g" \
-      "$WAYBAR_DIR/style.css.tpl" > "$WAYBAR_STYLE_OUT"
-  fi
-
-  pkill waybar >/dev/null 2>&1 || true
-  waybar >/dev/null 2>&1 &
-fi
+# Quickshell reads colors straight out of current-theme.json/colors.json
+# via Theme.qml's FileView (watchChanges: true) - no generated config to
+# write and nothing to restart, unlike waybar's old config+style.css.tpl
+# render-and-relaunch step this replaced.
 
 # --------- Starship (theme-aware) ----------
 STARSHIP_TPL="$BASE/templates/starship.toml.tpl"
@@ -559,50 +520,14 @@ if [[ -f "$HYPRLOCK_TPL" ]]; then
     "$HYPRLOCK_TPL" > "$HYPRLOCK_OUT"
 fi
 
-# --------- SwayNC ----------
-SWAYNC_TPL_DIR="$BASE/templates/swaync"
-SWAYNC_OUT_DIR="$HOME/.config/swaync"
-
-SWAYNC_CFG_TPL="$SWAYNC_TPL_DIR/config.json.tpl"
-SWAYNC_STYLE_TPL="$SWAYNC_TPL_DIR/style.css.tpl"
-
-SWAYNC_CFG_OUT="$SWAYNC_OUT_DIR/config.json"
-SWAYNC_STYLE_OUT="$SWAYNC_OUT_DIR/style.css"
-
-if [[ -d "$SWAYNC_TPL_DIR" ]]; then
-  mkdir -p "$SWAYNC_OUT_DIR"
-
-  if [[ -f "$SWAYNC_CFG_TPL" ]]; then
-    sed \
-      -e "s/{{bg}}/$bg_hex/g" \
-      -e "s/{{fg}}/$fg_hex/g" \
-      -e "s/{{accent}}/$accent_hex/g" \
-      -e "s/{{blue}}/$blue_hex/g" \
-      -e "s/{{lavender}}/$lavender_hex/g" \
-      -e "s/{{font_family}}/$font_family/g" \
-      -e "s/{{font_family_bold}}/$font_family_bold/g" \
-      "$SWAYNC_CFG_TPL" > "$SWAYNC_CFG_OUT"
-  fi
-
-  if [[ -f "$SWAYNC_STYLE_TPL" ]]; then
-    sed \
-      -e "s/{{bg}}/$bg_hex/g" \
-      -e "s/{{fg}}/$fg_hex/g" \
-      -e "s/{{accent}}/$accent_hex/g" \
-      -e "s/{{accent_alt}}/$accent_hex/g" \
-      -e "s/{{border_active}}/${border_active_hex:-$accent_hex}/g" \
-      -e "s/{{font_family}}/$font_family/g" \
-      -e "s/{{font_family_bold}}/$font_family_bold/g" \
-      -e "s|{{chrome_css}}|$CHROME_OUT|g" \
-      "$SWAYNC_STYLE_TPL" > "$SWAYNC_STYLE_OUT"
-  fi
-
-  # reload swaync safely
-  if command -v swaync-client >/dev/null 2>&1; then
-    swaync-client -R >/dev/null 2>&1 || true
-    swaync-client -rs >/dev/null 2>&1 || true
-  fi
-fi
+# SwayNC's config.json/style.css rendering and reload used to live here.
+# Quickshell's own notification daemon (Notifications.qml) replaced swaync
+# and its unit is masked - swaync-client -R/-rs would D-Bus-activate against
+# a service that can never start and hang waiting for it, stalling every
+# theme switch after the first (the widget's Process never finishes, so the
+# next click's `running = true` is a no-op against a process still stuck
+# here). ~/.config/swaync/scripts/{brightness_get,brightness_set}.sh are
+# still read directly by ControlCenter.qml and are untouched by this.
 
 # --------- Wlogout ----------
 WLOGOUT_TPL_DIR="$BASE/templates/wlogout"
@@ -690,7 +615,6 @@ OBSIDIAN_TPL="$BASE/templates/obsidian.css.tpl"
 OBSIDIAN_SNIPPET_OUT="$HOME/obsidian/.obsidian/snippets/obsidian.css"
 
 if [[ -f "$OBSIDIAN_TPL" ]]; then
-  echo "obsidian block entered"
   mkdir -p "$(dirname "$OBSIDIAN_SNIPPET_OUT")"
 
   accent_alt_safe="${accent_alt_hex:-$accent_hex}"

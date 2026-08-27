@@ -10,7 +10,7 @@
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 LOG="${TMPDIR:-/tmp}/dotfiles-install.$$.log"
-TOTAL=20
+TOTAL=22
 STEP=0
 FAILED=()
 NOTES=()
@@ -110,12 +110,12 @@ run sudo dnf install -y dnf5-plugins
 run sudo dnf upgrade --refresh -y
 
 enable_coprs() {
-    sudo dnf copr enable -y erikreider/SwayNotificationCenter &&
+    sudo dnf copr enable -y errornointernet/quickshell &&
     sudo dnf copr enable -y atim/starship &&
     sudo dnf copr enable -y sdegler/hyprland &&
     sudo dnf copr enable -y rowanfr/fw-ectool
 }
-step "Enabling Copr repositories" "Third-party builds of SwayNC, starship, and the Framework EC tool."
+step "Enabling Copr repositories" "Third-party builds of Quickshell, starship, and the Framework EC tool."
 run enable_coprs
 
 step "Installing Hyprland"
@@ -127,8 +127,8 @@ run sudo dnf install -y make gcc golang glib2-devel cairo-devel \
     python3-gobject-devel pango-devel gtk3-devel gtk-layer-shell-devel \
     pulseaudio-libs pulseaudio-libs-devel cxxopts jq pkgconf-pkg-config \
     git curl wget unzip flatpak meson ninja-build fw-ectool btop \
-    stow starship dolphin waybar hyprpaper zsh vim blueman \
-    fastfetch SwayNotificationCenter \
+    stow starship dolphin quickshell hyprpaper zsh vim blueman \
+    fastfetch \
     grim slurp wl-clipboard satty zenity \
     cargo rust libadwaita-devel librsvg2-devel gtk4-devel
 
@@ -154,27 +154,6 @@ install_avizo() {
 }
 step "Installing Avizo" "On-screen volume and brightness popups."
 run install_avizo
-
-build_nwg_dock() {
-    rm -rf /tmp/nwg-dock-hyprland &&
-    git clone https://github.com/nwg-piotr/nwg-dock-hyprland /tmp/nwg-dock-hyprland &&
-    make -C /tmp/nwg-dock-hyprland get build &&
-    sudo make -C /tmp/nwg-dock-hyprland install
-}
-step "Building nwg-dock-hyprland"
-run build_nwg_dock
-rm -rf /tmp/nwg-dock-hyprland
-
-build_pamixer() {
-    rm -rf /tmp/pamixer &&
-    git clone https://github.com/cdemoulins/pamixer.git /tmp/pamixer &&
-    meson setup /tmp/pamixer/build /tmp/pamixer &&
-    meson compile -C /tmp/pamixer/build &&
-    sudo meson install -C /tmp/pamixer/build
-}
-step "Building pamixer" "Waybar's volume module shells out to this."
-run build_pamixer
-rm -rf /tmp/pamixer
 
 build_wleave() {
     # wleave replaces wlogout: same layout format, actively maintained, GTK4.
