@@ -13,8 +13,6 @@ import "root:/popups"
 BarText {
     id: root
 
-    leftPadding: 10
-    rightPadding: 10
 
     readonly property var adapter: Bluetooth.defaultAdapter
     readonly property bool anyConnected: {

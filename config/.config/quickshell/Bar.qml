@@ -47,13 +47,11 @@ PanelWindow {
         anchors.leftMargin: Theme.gap
         anchors.rightMargin: Theme.gap
 
-        // .modules-left { padding: 0 0 0 10px } - one background behind the
-        // utilities group, the workspace buttons and the media group.
+        // One background behind the utilities group, the workspace buttons
+        // and the media group, the way .modules-left was.
         Island {
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
-            leftPad: 10
-            rightPad: 0
 
             Group {
                 Launcher {}
@@ -64,9 +62,11 @@ PanelWindow {
 
             // Bare buttons between the two groups, with no brackets of their
             // own - the only part of the bar that is not inside a group.
-            Workspaces { Layout.leftMargin: 5 }    // bar-wide "spacing": 5
+            // No margins here or anywhere else in the bar: spacing is one
+            // item's padding meeting the next one's. See Theme.itemPad.
+            Workspaces {}
 
-            MprisWidget { Layout.leftMargin: 10 }  // spacing 5 + margin-left 5
+            MprisWidget {}
         }
 
         Island {
@@ -90,7 +90,6 @@ PanelWindow {
             }
 
             Group {
-                Layout.leftMargin: 5   // bar-wide "spacing": 5
                 Clock {}
                 Separator {}
                 Network {}

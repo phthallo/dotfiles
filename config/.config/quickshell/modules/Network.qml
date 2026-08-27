@@ -14,8 +14,6 @@ import "root:/popups"
 BarText {
     id: root
 
-    leftPadding: 10
-    rightPadding: 10
 
     readonly property var wired: {
         for (const d of Networking.devices.values)

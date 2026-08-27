@@ -2,12 +2,15 @@ import QtQuick
 import Quickshell.Services.Mpris
 import "root:/"
 
-// waybar's mpris module is a SINGLE label whose format string is
-// "[ \uf001  {status_icon} | {dynamic} ]" - the brackets, the music note and
-// the spacing between them are literal characters in one monospace run, not
-// separate widgets. Building it out of several BarTexts put Qt's own spacing
-// between them and read wider than waybar's.
-BarText {
+// waybar's mpris module, whose format string was
+// "[   {status_icon} | {dynamic} ]" - brackets, music note, separator
+// and spacing all literal characters in one monospace run.
+//
+// Here it is a Group of real items instead. Kept as one string it was the
+// only cluster on the bar whose insides were spaced by literal space
+// characters, which came to about 7px against the 20 every other item sits
+// at, and it read visibly cramped beside them.
+Group {
     id: root
 
     // The first player actually playing, falling back to the first that
@@ -22,13 +25,13 @@ BarText {
     readonly property bool playing:
         player?.playbackState === MprisPlaybackState.Playing
 
-    // \uf04d is the stop glyph: with nothing playing the widget stays put
+    //  is the stop glyph: with nothing playing the widget stays put
     // and reads as stopped, rather than appearing and disappearing and
     // shifting everything beside it every time a player comes and goes.
-    readonly property string statusIcon: !player ? "\uf04d"
+    readonly property string statusIcon: !player ? ""
         : playing ? "▶"
         : player.playbackState === MprisPlaybackState.Paused ? "⏸"
-        : "\uf04d"
+        : ""
 
     // dynamic-len: 40, dynamic-order: ["artist"]
     readonly property string dynamic: {
@@ -36,15 +39,33 @@ BarText {
         return a.length > 40 ? a.slice(0, 40) : a;
     }
 
-    // The separator only earns its place when there is an artist after it.
-    text: "[ \uf001  " + statusIcon + (dynamic ? " | " + dynamic : "") + " ]"
-
-    // #mpris.playing flips the whole label to a filled green pill.
-    color: playing ? Theme.bg : player ? Theme.fg : Theme.fgDim
+    // #mpris.playing flips the whole label, brackets included, to a filled
+    // green pill.
+    ink: playing ? Theme.bg : player ? Theme.fg : Theme.fgDim
     chipColor: playing ? Theme.green : "transparent"
-    chipRadius: 2
-    leftPadding: 9
-    rightPadding: 9
 
-    onLeft: () => root.player?.togglePlaying()
+    BarText {
+        text: ""
+        color: root.ink
+        onLeft: () => root.player?.togglePlaying()
+    }
+
+    BarText {
+        text: root.statusIcon
+        color: root.ink
+        onLeft: () => root.player?.togglePlaying()
+    }
+
+    // The separator and the artist only earn their place together.
+    Separator {
+        color: root.ink
+        visible: root.dynamic !== ""
+    }
+
+    BarText {
+        text: root.dynamic
+        color: root.ink
+        visible: root.dynamic !== ""
+        onLeft: () => root.player?.togglePlaying()
+    }
 }

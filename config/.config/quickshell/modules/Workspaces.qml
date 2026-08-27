@@ -54,8 +54,9 @@ MouseArea {
                 chipColor: active ? Theme.surface : "transparent"
                 chipRadius: 0        // border-radius: 0 on these
 
-                leftPadding: 8       // padding: 0 8px, no vertical padding
-                rightPadding: 8
+                // Padded like every other bar item, which also sets how
+                // far the active workspace's filled cell extends past
+                // its numeral.
                 // Layout.fillHeight, not height: inside a RowLayout the layout
                 // owns geometry and a plain height assignment is discarded.
                 Layout.fillHeight: true

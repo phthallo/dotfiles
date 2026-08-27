@@ -14,18 +14,16 @@ BarText {
         ? Theme.accent : Theme.fg
 
     font.pixelSize: Theme.fontSize + 1   // #custom-swaync: 16px
-    leftPadding: 5
-    rightPadding: 10
-    // The superscript is drawn outside the label, so its cells have to be
-    // added by hand or the closing bracket sits on top of the count.
-    cells: 1 + (Notifications.list.length > 0
-                ? String(Notifications.list.length).length : 0)
+    // The superscript hangs off the right edge of the label, so its width
+    // has to be reserved by hand or the closing bracket lands on top of it.
+    extraWidth: sup.visible ? sup.implicitWidth : 0
 
     onLeft: () => Notifications.panelOpen = !Notifications.panelOpen
     onRight: () => Notifications.dnd = !Notifications.dnd
 
     // The count rides above the glyph the way waybar's <sup> did.
     Text {
+        id: sup
         visible: Notifications.list.length > 0
         text: Notifications.list.length
         anchors.left: parent.right

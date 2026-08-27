@@ -14,8 +14,11 @@ Rectangle {
     id: root
 
     default property alias content: inner.data
-    property int leftPad: 10
-    property int rightPad: 10
+    // Zero by default: every item in the bar carries Theme.itemPad on
+    // both its sides, so the first and last already sit half a gap in
+    // from the border without the island adding more.
+    property int leftPad: 0
+    property int rightPad: 0
 
     color: Theme.bg
     radius: Theme.radius

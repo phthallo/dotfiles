@@ -119,10 +119,19 @@ Singleton {
     // floors to 9 and Qt rounds to 10. Without this the bar drifts a pixel
     // wider per character than waybar's.
     readonly property real letterSpacing: -1
-    // One monospace cell at fontSize. Nerd Font icons carry a double-width
-    // advance that Pango collapses to a single cell while still drawing the
-    // full-size glyph; clamping an icon label to this reproduces that.
-    readonly property int cellWidth: 9
+
+    // Clear space either side of the ink of every item in the bar - modules,
+    // separators and the group brackets alike. BarText measures the glyphs
+    // rather than their advances, so the gap between any two neighbours is
+    // twice this everywhere, and an item at the end of an island sits exactly
+    // half a gap from the border.
+    //
+    // waybar's stylesheet had no such rule: its per-module padding ran 0, 5
+    // and 10 depending on which module it was, which put 5px between the
+    // theme switcher and the separator beside it and 20px between the wifi
+    // and bluetooth icons. Matching that faithfully reproduced the
+    // unevenness, so this is a deliberate departure from it.
+    readonly property int itemPad: 10
 
     // Chrome rhythm, copied from templates/shared/chrome.css.tpl - the same
     // numbers swaync and wofi are told to repeat literally, because GTK3 has

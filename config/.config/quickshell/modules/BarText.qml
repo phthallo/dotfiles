@@ -15,13 +15,10 @@ Text {
     property var onRight: null
     property var onMiddle: null
 
-    // Width in monospace cells. Pango lays every label out as one cell per
-    // character; Qt asks the font, and for Nerd Font icons it gets back a
-    // 1.0-1.15em advance instead of 0.62em, so each icon sat ~6px wider than
-    // waybar's. Counting characters reproduces waybar's geometry exactly and
-    // lets the icon ink overflow its cell, which is what Pango does too.
-    // Array.from, not .length: Plane-15 icons are surrogate pairs.
-    property int cells: Array.from(text).length
+    // Extra width to reserve beyond the label itself, for anything an item
+    // draws outside its own text. The bell's superscript count is the only
+    // one; without it the group's closing bracket sits on top of the count.
+    property int extraWidth: 0
 
     property color chipColor: "transparent"
     property int chipRadius: 2
@@ -35,9 +32,37 @@ Text {
     // box; without it each one centres on its own glyph metrics and
     // items with different ink heights sit at different offsets.
     Layout.fillHeight: true
-    Layout.preferredWidth: cells > 0
-        ? leftPadding + cells * Theme.cellWidth + rightPadding
-        : implicitWidth
+    // Every item reserves exactly `pad` of clear space on each side of the
+    // ink it actually paints, so one padding value produces one gap right
+    // across the bar.
+    //
+    // Padding the advance instead does not, because in this font the advance
+    // and the ink are barely related: every glyph advances 8.3px, while "|"
+    // paints 3px of it and a Nerd Font icon paints 15-19px, spilling several
+    // pixels out either side. Padding those equally left a run of icons 12px
+    // apart on screen and a run of digits 24px apart. (waybar had it worse
+    // still - it laid each label out in one monospace cell per character,
+    // which put a 19px icon in a 9px box.)
+    //
+    // So the padding absorbs the difference: shift the text right by the
+    // ink's left bearing, and make up the rest on the right. The width that
+    // falls out is pad + ink + pad, which is what implicitWidth needs to be
+    // in a plain Row as well as in a RowLayout.
+    //
+    // The right side subtracts contentWidth and not the advance, because for
+    // the icons those two disagree - Qt lays a 15px icon out 14.3px wide
+    // while the font still calls its advance 8.3 - and it is contentWidth
+    // that implicitWidth is actually built from.
+    property int pad: Theme.itemPad
+    TextMetrics {
+        id: metrics
+        font: root.font
+        text: root.text
+    }
+    leftPadding: pad - metrics.tightBoundingRect.x
+    rightPadding: pad + metrics.tightBoundingRect.width
+                + metrics.tightBoundingRect.x - contentWidth
+    Layout.preferredWidth: implicitWidth + extraWidth
 
     Rectangle {
         // z below the text but still inside it, so the chip tracks the label's

@@ -38,8 +38,6 @@ BarText {
              : "transparent"
     color: charging || plugged ? Theme.bg : Theme.fg
 
-    leftPadding: 10
-    rightPadding: 10
     topPadding: 4
     bottomPadding: 4
 

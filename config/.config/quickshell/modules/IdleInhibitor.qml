@@ -10,8 +10,6 @@ import "root:/"
 // toggled on.
 BarText {
     // #idle_inhibitor: padding 0 10px 0 0
-    leftPadding: 0
-    rightPadding: 10
     id: root
 
     required property var window

@@ -11,8 +11,6 @@ import "root:/popups"
 // terminal uses and where apply-theme.sh does the actual restyling.
 BarText {
     // #custom-themeswitcher: padding-left 5, padding-right 10
-    leftPadding: 5
-    rightPadding: 10
     id: root
     text: "\uE22B"   // palette
 
