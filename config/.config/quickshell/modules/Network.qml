@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell.Io
+import "root:/"
 
 // waybar's network module, which read the interface directly. Quickshell has
 // no network service, so this polls nmcli - which is also what the click
@@ -47,17 +48,19 @@ BarText {
                 }
                 root.kind = kind;
                 if (kind === "wifi")
-                    signal.running = true;
+                    signalPoll.running = true;
             }
         }
     }
 
     Process {
-        id: signal
-        command: ["nmcli", "-t", "-f", "IN-USE,SIGNAL", "device", "wifi"]
+        id: signalPoll
+        command: ["nmcli", "-t", "-f", "ACTIVE,SIGNAL", "device", "wifi"]
         stdout: StdioCollector {
             onStreamFinished: {
-                const active = this.text.trim().split("\n").find(l => l.startsWith("*"));
+                // ACTIVE is yes/no rather than IN-USE's "*" in a padded
+                // column, so this does not depend on nmcli's formatting.
+                const active = this.text.trim().split("\n").find(l => l.startsWith("yes:"));
                 if (active)
                     root.strength = Number(active.split(":")[1]) || 0;
             }

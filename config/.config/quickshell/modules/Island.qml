@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import "root:/"
 
 // One of the bar's rounded boxes.
 //

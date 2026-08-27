@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell.Services.Mpris
+import "root:/"
 
 // waybar's mpris module: "[ ♪ ▶ | artist ]", 40 chars of dynamic text.
 // The brackets were part of the format string there; here the island draws

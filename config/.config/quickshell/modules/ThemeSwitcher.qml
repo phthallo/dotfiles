@@ -1,4 +1,5 @@
 import Quickshell.Io
+import Quickshell
 
 // waybar's custom/themeswitcher. Still shells out to theme-switcher.sh rather
 // than reimplementing the picker in QML: the script is what apply-theme.sh and
@@ -11,7 +12,7 @@ import Quickshell.Io
 // as a layer surface cannot).
 BarText {
     id: root
-    text: ""
+    text: "\uE22B"   // palette
 
     property string script: Quickshell.env("HOME") + "/.config/waybar/scripts/theme-switcher.sh"
     property string cycler: Quickshell.env("HOME") + "/.config/waybar/scripts/wallpaper-cycler.sh"

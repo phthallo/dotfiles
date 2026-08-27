@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Wayland
 import "modules"
 
@@ -32,6 +33,14 @@ PanelWindow {
     // Above normal windows but below dialogs, matching waybar's default.
     WlrLayershell.layer: WlrLayer.Top
     WlrLayershell.namespace: "quickshell:bar"
+
+    // Hyprland.toplevels starts empty and is only filled on request, so
+    // without this the window title stays blank until something else happens
+    // to trigger a refresh - on a quiet desktop, a long wait. It lives here
+    // rather than in shell.qml because ShellRoot has no attached Component
+    // signals; on a multi-monitor setup it just runs once per bar, which is
+    // harmless since the call is idempotent.
+    Component.onCompleted: Hyprland.refreshToplevels()
 
     Item {
         anchors.fill: parent

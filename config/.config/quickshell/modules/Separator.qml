@@ -1,4 +1,5 @@
 import QtQuick
+import "root:/"
 
 // waybar's custom/split module: a literal "|" between items inside an island.
 Text {

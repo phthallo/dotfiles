@@ -1,6 +1,8 @@
 import QtQuick
 import Quickshell.Io
 import Quickshell.Services.UPower
+import "root:/"
+import Quickshell
 
 // waybar's battery module. The icon ramp and the warning/critical thresholds
 // are carried over verbatim (30% and 15%), as is the click target - the logout
@@ -15,9 +17,9 @@ BarText {
           || dev.state === UPowerDeviceState.PendingCharge
         : false
 
-    readonly property var icons: ["", "", "", "", ""]
+    readonly property var icons: ["\uF244", "\uF243", "\uF242", "\uF241", "\uF240"]
 
-    text: (charging ? "" : icons[Math.min(4, Math.floor(percent / 20))])
+    text: (charging ? "\uF5E7" : icons[Math.min(4, Math.floor(percent / 20))])
         + " " + percent + "%"
 
     // waybar drove these off .warning/.critical CSS classes; the colours are

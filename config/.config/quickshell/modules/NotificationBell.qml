@@ -1,4 +1,5 @@
 import QtQuick
+import "root:/"
 
 // waybar's custom/swaync: the bell, with an unread count in superscript and a
 // crossed-out variant for do-not-disturb.
@@ -8,7 +9,7 @@ import QtQuick
 BarText {
     id: root
 
-    text: Notifications.dnd ? "" : ""
+    text: Notifications.dnd ? "\uF1F6" : "\uF0F3"   // bell-slash / bell
     color: Notifications.list.length > 0 && !Notifications.dnd
         ? Theme.accent : Theme.fg
 

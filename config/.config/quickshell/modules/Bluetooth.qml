@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell.Io
+import Quickshell
 
 // waybar's custom/bluetooth, which already shelled out to this script on a 5s
 // interval. Kept as-is: the script is the authority on what the glyph should

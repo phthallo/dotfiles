@@ -1,4 +1,5 @@
 import QtQuick
+import "root:/"
 
 // Shared look for every textual item on the bar, plus the click handling
 // waybar expressed as on-click/on-click-right/on-click-middle.

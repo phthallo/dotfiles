@@ -1,4 +1,5 @@
 import Quickshell.Wayland
+import "root:/"
 
 // waybar's idle_inhibitor: eye open means idling is allowed, eye crossed out
 // means it is being held off.
@@ -12,7 +13,7 @@ BarText {
 
     required property var window
 
-    text: inhibitor.enabled ? "" : ""
+    text: inhibitor.enabled ? "\uF06E" : "\uF070"   // eye / eye-slash
     color: inhibitor.enabled ? Theme.accent : Theme.fg
     onLeft: () => inhibitor.enabled = !inhibitor.enabled
 
