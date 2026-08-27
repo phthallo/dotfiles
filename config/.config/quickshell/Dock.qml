@@ -168,8 +168,8 @@ PanelWindow {
                     // state just as well (blue for the group holding the
                     // focused window, muted for the rest).
                     //
-                    // Capped at four. Past that the dots stop being countable
-                    // at a glance and just become a smear.
+                    // Capped at three. Past that the dots stop being
+                    // countable at a glance and just become a smear.
                     Row {
                         anchors.bottom: parent.bottom
                         anchors.bottomMargin: 5
@@ -177,7 +177,7 @@ PanelWindow {
                         spacing: 3
 
                         Repeater {
-                            model: Math.min(button.group.length, 4)
+                            model: Math.min(button.group.length, 3)
 
                             delegate: Rectangle {
                                 width: 4
