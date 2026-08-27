@@ -35,7 +35,6 @@ PopupShell {
             font.weight: Font.Bold
         }
 
-        // Same pill as a control-center toggle, sized for a header.
         Rectangle {
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter

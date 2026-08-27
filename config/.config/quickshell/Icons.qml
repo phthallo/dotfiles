@@ -3,22 +3,13 @@ pragma Singleton
 import QtQuick
 import Quickshell
 
-// Turning a Wayland app id into an icon, which is guesswork more often than
-// not. Every branch below is a real case on this machine:
-//
-//   kitty                 id is the icon name, the easy case
-//   org.mozilla.firefox   entry declares Icon=firefox
-//   code                  entry declares Icon=vscode, which lives in
-//                         /usr/share/pixmaps and not in any icon theme
-//   spotify               a flatpak, whose entry id is com.spotify.Client
-//
-// Nothing here can stat a file, so instead of picking one answer it hands
-// back the whole ranked list and lets the Image walk it: each candidate that
-// fails to load falls through to the next one.
+// Turns a Wayland app id into an icon, which is guesswork more often than
+// not. Nothing here can stat a file, so it hands back a ranked list and lets
+// the Image walk it: each candidate that fails to load falls through to the
+// next.
 Singleton {
     id: root
 
-    // Icon names, best guess first.
     function iconNames(appId) {
         const names = [];
         const push = n => {
@@ -48,7 +39,6 @@ Singleton {
         return names;
     }
 
-    // Sources for an Image, in the order it should try them.
     function appIconCandidates(appId) {
         if (!appId)
             return [Quickshell.iconPath("application-x-executable")];
@@ -57,22 +47,19 @@ Singleton {
         const names = iconNames(appId);
 
         for (const name of names) {
-            // check: true returns "" on a theme miss rather than a path that
-            // resolves to nothing, so a miss falls through instead of ending
-            // the walk on a broken image.
+            // check: true returns "" on a theme miss instead of a path that
+            // resolves to nothing.
             const themed = Quickshell.iconPath(name, true);
             if (themed)
                 out.push(themed);
         }
-        // Qt's theme lookup never looks in pixmaps, which is where the icon
-        // vscode.desktop asks for actually lives.
+        // Qt's theme lookup never checks pixmaps, which is where vscode's
+        // declared icon actually lives.
         for (const name of names) {
             out.push("file:///usr/share/pixmaps/" + name + ".png");
             out.push("file:///usr/share/pixmaps/" + name + ".svg");
         }
 
-        // A blank source leaves a hole in the dock, which reads as a
-        // rendering bug rather than a missing icon.
         out.push(Quickshell.iconPath("application-x-executable"));
         return out;
     }

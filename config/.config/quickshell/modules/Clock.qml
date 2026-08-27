@@ -1,13 +1,11 @@
 import QtQuick
 import Quickshell
 
-// waybar's clock: 12-hour, zero-padded, no seconds and no AM/PM marker
-// ({:%I:%M}) - so it only needs to tick once a minute rather than once a
-// second.
+// waybar's clock: 12-hour, zero-padded, no seconds, no AM/PM ({:%I:%M}) - only
+// needs to tick once a minute.
 //
-// Qt's "hh" is 24-hour unless the format also contains AP, and adding AP means
-// stripping the marker back off afterwards. Doing the arithmetic is shorter
-// and says what it means.
+// Qt's "hh" format is 24-hour unless AP is also in the string, which then has
+// to be stripped back off. Doing the arithmetic directly is shorter.
 BarText {
     id: root
 

@@ -2,10 +2,8 @@ import QtQuick
 import "root:/"
 
 // waybar's custom/swaync: the bell, with an unread count in superscript and a
-// crossed-out variant for do-not-disturb.
-//
-// Left click toggled swaync's panel and right click toggled DND. Both now go
-// to our own Notifications service rather than out to swaync-client.
+// crossed-out variant for do-not-disturb. Left/right click now go to our own
+// Notifications service instead of swaync-client.
 BarText {
     id: root
 
@@ -26,12 +24,9 @@ BarText {
         id: sup
         visible: Notifications.list.length > 0
         text: Notifications.list.length
-        // Anchored to the item's right edge and inset by the same padding
-        // every other item keeps clear, which lands it exactly in the
-        // extraWidth reserved above - just past the bell, with a full gap
-        // after it. Anchoring to parent.right without the inset put it
-        // beyond the item entirely, so the reserved width became a hole to
-        // its left and the count still leaned on the next item.
+        // Inset by the same padding every other item keeps clear, landing it
+        // in the extraWidth reserved above. Without the inset it sat beyond
+        // the item entirely, turning that reserved width into a hole.
         anchors.right: parent.right
         anchors.rightMargin: root.pad
         anchors.bottom: parent.verticalCenter

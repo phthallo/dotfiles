@@ -1,13 +1,9 @@
 import Quickshell.Wayland
 import "root:/"
 
-// waybar's idle_inhibitor: eye open means idling is allowed, eye crossed out
-// means it is being held off.
-//
-// waybar spoke the idle-inhibit protocol itself. Quickshell exposes the same
-// thing per-window, so the inhibitor is attached to the bar's own surface -
-// the bar is always mapped, so the inhibit lasts exactly as long as it is
-// toggled on.
+// waybar's idle_inhibitor: eye open means idling is allowed, crossed out means
+// it's held off. Attached to the bar's own surface, which is always mapped,
+// so the inhibit lasts exactly as long as it's toggled on.
 BarText {
     // #idle_inhibitor: padding 0 10px 0 0
     id: root

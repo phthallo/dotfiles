@@ -2,21 +2,16 @@ import QtQuick
 import QtQuick.Layouts
 import "root:/"
 
-// One of waybar's group/* widgets: a run of modules wrapped in the literal
-// "[" and "]" that custom/openbracket and custom/closebracket rendered.
+// One of waybar's group/* widgets: a run of modules wrapped in literal "[" and
+// "]" brackets. Several can share one Island (the left and right containers
+// do).
 //
-// Several of these can share one Island, which is what the left and right
-// containers do.
+// chipColor fills the whole group, brackets included, matching how
+// #mpris.playing's background-color swallowed its own module's brackets too.
 //
-// chipColor fills the WHOLE group, brackets included. #mpris.playing set a
-// background-color on the mpris module, and its brackets came from that
-// module's own format string - so the green pill swallows the brackets too
-// rather than sitting behind individual labels.
-//
-// The chip is a sibling of the Row rather than a child of it: Qt refuses
-// left/right/fill/centerIn anchors on anything inside a positioner, and
-// "Row will not function" is a warning, not an error - the group silently
-// collapsed to zero width and spilled out past the island border.
+// The chip is a sibling of the Row, not a child - Qt silently ignores
+// fill/anchor rules on children of a positioner ("Row will not function" is
+// only a warning), which collapsed the group to zero width.
 Item {
     id: root
 
@@ -25,8 +20,8 @@ Item {
     property color ink: Theme.fg
 
     implicitWidth: row.implicitWidth
-    // A fixed interior height for the whole group, so the brackets and every
-    // label in between are centred against the same box.
+    // Fixed interior height, so the brackets and every label centre against
+    // the same box.
     implicitHeight: Theme.islandHeight - 2 * Theme.borderWidth
 
     Rectangle {

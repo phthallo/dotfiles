@@ -4,15 +4,11 @@ import Quickshell.Bluetooth
 import "root:/"
 import "root:/popups"
 
-// waybar's custom/bluetooth, which ran a shell script every five seconds to
-// ask bluetoothctl whether the adapter was powered. BlueZ publishes that on
-// the bus, so the glyph now follows the adapter instead of trailing it by up
-// to five seconds, and nothing is spawned to find out.
-//
-// Clicking it opens the device list rather than blueman-manager.
+// waybar's custom/bluetooth: BlueZ publishes adapter state on the bus, so
+// this follows it directly instead of polling bluetoothctl every 5s. Clicking
+// opens the device list instead of blueman-manager.
 BarText {
     id: root
-
 
     readonly property var adapter: Bluetooth.defaultAdapter
     readonly property bool anyConnected: {
@@ -30,10 +26,9 @@ BarText {
 
     BluetoothPopup {
         id: popup
-        // Anchored to the icon itself rather than to a hand-computed
-        // offset in the bar window: mapToItem is not a binding, so a
-        // position worked out once never moves again when the module
-        // beside it changes width.
+        // Anchored to the icon itself, not a computed offset - mapToItem
+        // isn't a binding, so a fixed offset wouldn't track the module
+        // resizing.
         anchor.item: root
     }
 }

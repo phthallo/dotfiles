@@ -5,13 +5,8 @@ import Quickshell.Hyprland
 import Quickshell.Wayland
 import "modules"
 
-// The bar, one per monitor.
-//
-// waybar drew a single transparent full-width surface and gave its three
-// module groups their own backgrounds, margins and borders, which is why the
-// stylesheet had .modules-left/.modules-center/.modules-right each repeating
-// the same box. Same result here, but the transparent surface is the
-// PanelWindow and each group is an Island.
+// One transparent PanelWindow per monitor; each module group gets its own
+// Island for background/border, mirroring waybar's .modules-left/center/right.
 PanelWindow {
     id: root
 
@@ -19,8 +14,6 @@ PanelWindow {
     screen: modelData
 
     color: "transparent"
-    // waybar reserved 50px total and pushed its groups down 20 into it, so
-    // the islands are 30 tall inside a 50 strip.
     implicitHeight: Theme.barHeight
 
     anchors {
@@ -29,16 +22,12 @@ PanelWindow {
         right: true
     }
 
-    // Above normal windows but below dialogs, matching waybar's default.
     WlrLayershell.layer: WlrLayer.Top
     WlrLayershell.namespace: "quickshell:bar"
 
-    // Hyprland.toplevels starts empty and is only filled on request, so
-    // without this the window title stays blank until something else happens
-    // to trigger a refresh - on a quiet desktop, a long wait. It lives here
-    // rather than in shell.qml because ShellRoot has no attached Component
-    // signals; on a multi-monitor setup it just runs once per bar, which is
-    // harmless since the call is idempotent.
+    // Hyprland.toplevels starts empty until refreshToplevels() runs, so
+    // without this the window title stays blank until something else triggers
+    // a refresh.
     Component.onCompleted: Hyprland.refreshToplevels()
 
     Item {
@@ -47,8 +36,6 @@ PanelWindow {
         anchors.leftMargin: Theme.gap
         anchors.rightMargin: Theme.gap
 
-        // One background behind the utilities group, the workspace buttons
-        // and the media group, the way .modules-left was.
         Island {
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
@@ -60,10 +47,9 @@ PanelWindow {
                 ThemeSwitcher {}
             }
 
-            // Bare buttons between the two groups, with no brackets of their
-            // own - the only part of the bar that is not inside a group.
-            // No margins here or anywhere else in the bar: spacing is one
-            // item's padding meeting the next one's. See Theme.itemPad.
+            // The only bar items with no brackets of their own. No margins
+            // anywhere in the bar - spacing comes from each item's own
+            // padding meeting the next (Theme.itemPad).
             Workspaces {}
 
             MprisWidget {}

@@ -4,33 +4,25 @@ import QtQuick
 import Quickshell
 import Quickshell.Services.Notifications
 
-// The notification daemon, replacing swaync.
-//
-// Only one process on the session may own org.freedesktop.Notifications, so
-// swaync MUST be stopped before this runs or the server never binds and
-// notifications silently keep going to swaync. See README.md.
+// Notification daemon, replacing swaync. Only one process may own
+// org.freedesktop.Notifications, so swaync must be stopped before this runs
+// or notifications silently keep going to it. See README.md.
 Singleton {
     id: root
 
     property bool panelOpen: false
     property bool dnd: false
 
-    // How many notifications are kept at once. Each one holds its image
-    // buffer for as long as it is tracked.
     readonly property int maxTracked: 50
 
-    // Everything received this session, newest first. swaync persisted its
-    // list across restarts; this does not - a shell reload starts with an
-    // empty tray, which is a real behaviour difference and the main thing to
-    // check before dropping swaync for good.
+    // Everything received this session, newest first. Unlike swaync, this
+    // doesn't persist across restarts.
     property list<var> list: []
 
-    // The subset currently shown as floating toasts, oldest first so the
-    // stack grows downward the way swaync's did.
+    // The subset shown as floating toasts, oldest first.
     property list<var> popups: []
 
-    // swaync's defaults, which config.json never overrode: normal 10s, low
-    // 5s, critical stays until it is clicked away.
+    // swaync's defaults, which config.json never overrode.
     function timeoutFor(notif) {
         if (notif.expireTimeout > 0)
             return notif.expireTimeout;
@@ -44,9 +36,6 @@ Singleton {
     NotificationServer {
         id: server
 
-        // Advertised capabilities. Claiming a capability the UI does not
-        // implement means senders format for something that never renders,
-        // so these track what the cards actually draw.
         actionsSupported: true
         bodyMarkupSupported: true
         imageSupported: true
@@ -54,15 +43,11 @@ Singleton {
 
         onNotification: notif => {
             // tracked() keeps the object alive past this callback - without
-            // it the notification is freed as soon as the handler returns and
-            // the list fills with nulls.
+            // it the notification is freed immediately and the list fills
+            // with nulls.
             notif.tracked = true;
-            // An app stuck in a loop can push notifications faster than
-            // anyone clears them, and every tracked one holds an image
-            // buffer; drop the oldest past a cap rather than growing until
-            // the shell is swapping. Fifty rather than a hundred: the list
-            // is a scrolling column nobody reads to the bottom of, and the
-            // cap is a memory bound, not a history anyone asked for.
+            // Each tracked notification holds an image buffer, so drop the
+            // oldest past the cap rather than growing unbounded.
             const kept = root.list.slice(0, root.maxTracked - 1);
             for (const old of root.list.slice(root.maxTracked - 1))
                 old.dismiss();
@@ -73,19 +58,12 @@ Singleton {
                 root.popups = root.popups.filter(n => n !== notif);
             });
 
-            // Do not disturb still records the notification, it just does not
-            // pop it up - so the count stays honest and you can read what you
-            // missed when you turn DND off.
             if (!root.dnd)
                 root.popups = [...root.popups, notif];
         }
     }
 
-    // swaync hid the toasts while the control center was open - anything
-    // that would have popped up is already visible in the list behind it.
     onPanelOpenChanged: if (panelOpen) popups = [];
-    // Turning DND on should silence what is already on screen too, otherwise
-    // the toggle only applies to the next notification.
     onDndChanged: if (dnd) popups = [];
 
     function expire(notif) {

@@ -2,20 +2,14 @@ import QtQuick
 import Quickshell.Services.Mpris
 import "root:/"
 
-// waybar's mpris module, whose format string was
-// "[   {status_icon} | {dynamic} ]" - brackets, music note, separator
-// and spacing all literal characters in one monospace run.
-//
-// Here it is a Group of real items instead. Kept as one string it was the
-// only cluster on the bar whose insides were spaced by literal space
-// characters, which came to about 7px against the 20 every other item sits
-// at, and it read visibly cramped beside them.
+// waybar's mpris module: was one format string with brackets, music note,
+// separator and spacing as literal characters in a monospace run. Here it's a
+// Group of real items instead, spaced like the rest of the bar.
 Group {
     id: root
 
-    // The first player actually playing, falling back to the first that
-    // exists - so a paused Spotify still shows rather than the widget
-    // vanishing the moment you hit pause.
+    // Falls back to the first player that exists, so a paused Spotify still
+    // shows instead of vanishing the moment you hit pause.
     readonly property var player: {
         const ps = Mpris.players.values;
         return ps.find(p => p.playbackState === MprisPlaybackState.Playing)
@@ -29,10 +23,9 @@ Group {
         : player?.playbackState === MprisPlaybackState.Paused ? "⏸"
         : ""
 
-    // Gone entirely with nothing playing, matching the panel's card. A
-    // paused player still counts - the widget is how you resume it - but
+    // Hidden with nothing playing. A paused player still counts, but
     // playerctld keeps a stopped, title-less player around indefinitely, so
-    // "a player exists" on its own is not a signal that anything is on.
+    // "a player exists" alone isn't a sign anything is on.
     visible: !!player
         && player.playbackState !== MprisPlaybackState.Stopped
         && !!player.trackTitle

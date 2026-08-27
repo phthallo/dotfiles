@@ -6,27 +6,20 @@ import "root:/"
 // and radius as the control center, so a wifi list and the theme picker read
 // as the same window at different sizes.
 //
-// grabFocus makes this an xdg popup with a pointer grab, so a click anywhere
-// outside dismisses it. That is the thing wofi could never do as a layer
-// surface - a layer surface never sees the focus-out.
+// grabFocus makes this an xdg popup with a pointer grab, so a click outside
+// dismisses it - something a layer surface (like wofi) can never see.
 PopupWindow {
     id: root
 
     default property alias content: inner.data
     property int contentWidth: 320
 
-    // Theme.gap below the bar, matching gaps_out, so a popup lines up with
-    // the top edge of the tiled windows beside it and with the control
-    // center.
     readonly property int dropGap: Theme.gap
 
     // Callers flip `open`, never `visible`. The compositor closes a grabbing
-    // popup on its own when a click lands outside it, so a `visible: open`
-    // binding would go stale and the next click on the bar button would only
-    // toggle the flag back - the classic two-clicks-to-reopen bug. Syncing
-    // both directions instead keeps the button an honest toggle: clicking it
-    // again is itself an outside click, the grab eats it, the surface goes,
-    // and this sees that and clears the flag.
+    // popup on its own on an outside click, so a one-way `visible: open`
+    // binding goes stale and the button needs two clicks to reopen. Syncing
+    // both directions keeps it an honest toggle instead.
     property bool open: false
     onOpenChanged: {
         if (open) place();
@@ -46,17 +39,10 @@ PopupWindow {
     anchor.gravity: Edges.Bottom
     anchor.adjustment: PopupAdjustment.SlideX
 
-    // Placed by hand rather than left to the anchor, because centring a popup
-    // under a bar item near the edge puts its border flush against the screen
-    // - and the theme switcher lives in the left island, so it always was.
-    // SlideX only promises the window lands *on* screen, not gaps_out from
-    // it. Masking a wider window down to a padded card is the other way to
-    // do this and works fine - a Region mask does pass the clicks outside it
-    // through, checked directly - but a window that is already the size of
-    // what it draws needs no mask at all, so this does that instead.
-    //
-    // Run once per open: bar items only move when the bar relayouts, which
-    // cannot happen while a grabbing popup holds the pointer.
+    // Placed by hand rather than left to the anchor: SlideX only guarantees
+    // the window lands on screen, not gaps_out from the edge, and the theme
+    // switcher lives right in the left island. Run once per open - bar items
+    // can't move while a grabbing popup holds the pointer.
     function place(): void {
         const item = anchor.item;
         const win = item?.QsWindow?.window ?? null;
@@ -98,11 +84,9 @@ PopupWindow {
         border.width: Theme.borderWidth
         border.color: Theme.borderActive
 
-        // The height cap above is a cap on the window, not on the content:
-        // without something to scroll, a wifi list longer than 600px simply
-        // ran off the bottom edge and the networks past it could not be
-        // reached at all. interactive only while it overflows, so a short
-        // list does not drift under the pointer.
+        // The 600px cap above bounds the window, not the content - without
+        // this, a longer wifi list just ran off the bottom, unreachable.
+        // interactive only while it overflows, so a short list doesn't drift.
         Flickable {
             id: scroll
             anchors.fill: parent

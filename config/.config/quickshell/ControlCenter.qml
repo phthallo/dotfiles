@@ -9,23 +9,16 @@ import Quickshell.Services.Pipewire
 import "root:/"
 import "panels"
 
-// swaync's control center, in the order config.json listed its widgets:
+// swaync's control center, ordered as config.json listed its widgets:
 // buttons-grid, volume, brightness, title, notifications, mpris.
-//
-// Geometry from the same file: 420 wide, pinned top-right, 20px off every
-// edge to match gaps_out in hyprland.conf, on the top layer with an
-// exclusive zone - opening it shifts tiled windows aside exactly as swaync's
-// did.
 Scope {
     id: root
 
     required property var modelData
 
-    // Backdrop first, so it stacks under the panel. A layer surface never
-    // gets a focus-out from a plain pointer click (the compositor keeps
-    // handing it the keyboard), so "click outside to close" has to be an
-    // actual surface that catches the click. Both windows are ours, so there
-    // is no race over which one the click lands on.
+    // A layer surface never gets a focus-out from a plain click, so "click
+    // outside to close" needs an actual surface to catch it. This backdrop
+    // stacks under the panel and does that.
     PanelWindow {
         screen: root.modelData
         visible: Notifications.panelOpen
@@ -50,14 +43,10 @@ Scope {
         screen: root.modelData
         visible: Notifications.panelOpen
         onVisibleChanged: if (visible) show.restart()
-        // The loader above builds this window at the moment the panel opens,
-        // so it is already visible when it is created and onVisibleChanged
-        // never fires for the open that caused it. Without this the first
-        // open of each cycle skipped its animation and snapped into place.
+        // The loader builds this window already visible, so onVisibleChanged
+        // never fires for the open that caused it.
         Component.onCompleted: if (visible) show.restart()
 
-        // Same fade-and-settle as every popup the bar drops down; see
-        // Theme.openDuration.
         ParallelAnimation {
             id: show
             NumberAnimation {
@@ -72,11 +61,6 @@ Scope {
             }
         }
 
-        // Anchored to two edges only, and exactly as tall as its content:
-        // the window IS the card. It used to span to the bottom of the
-        // screen with a mask cutting the input region down to the card;
-        // that worked, but a window already the size of what it draws needs
-        // no mask at all, so there is one less thing to keep in step.
         anchors.top: true
         anchors.right: true
         margins.top: Theme.gap
@@ -87,21 +71,16 @@ Scope {
                                  body.implicitHeight + 2 * Theme.panelPad)
         color: "transparent"
 
-        // Overlay, one level above the backdrop below it. Both were on Top,
-        // where stacking follows map order - and the backdrop mapped last,
-        // so it sat over the panel and swallowed every click: the grid, the
-        // sliders and the notification buttons all looked dead while the
-        // click was really landing on "close".
+        // Overlay, one layer above the backdrop. Both used to sit on Top,
+        // where stacking follows map order - the backdrop mapped last and
+        // swallowed every click meant for the panel.
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.namespace: "quickshell:controlcenter"
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
 
-        // swaync reserved its width and shoved every tiled window aside on
-        // open; this floats over them instead. Normal with a zero zone is
-        // the way to say that: it reserves nothing, but still respects the
-        // zones other surfaces reserve. Ignore reserves nothing AND ignores
-        // everyone else, which slid the panel up under the bar - the top row
-        // of buttons ended up behind it, unclickable.
+        // Normal + zero zone floats the panel over tiled windows while still
+        // respecting other surfaces' reserved zones; Ignore made it slide up
+        // under the bar.
         exclusionMode: ExclusionMode.Normal
         exclusiveZone: 0
 
@@ -120,7 +99,6 @@ Scope {
                 anchors.margins: Theme.panelPad
                 spacing: Theme.blockGap
 
-                // ---- buttons-grid#cc_controls, buttons-per-row: 5 ----
                 GridLayout {
                     Layout.fillWidth: true
                     columns: 5
@@ -150,10 +128,8 @@ Scope {
                         onTriggered: Notifications.dnd = !Notifications.dnd
                     }
 
-                    // The four toggles below used to shell out to wpctl,
-                    // nmcli and bluetoothctl on a poll to find their state.
-                    // They read it off the bus now, so the grid costs nothing
-                    // while it is closed and updates the instant it changes.
+                    // These four read live off the bus rather than polling
+                    // wpctl/nmcli/bluetoothctl on a timer.
                     GridButton {
                         glyph: "󰕾"
                         toggle: true
@@ -193,7 +169,6 @@ Scope {
                     }
                 }
 
-                // ---- volume#cc_volume ----
                 PanelSlider {
                     glyph: "󰕾"
                     value: Pipewire.defaultAudioSink?.audio.volume ?? 0
@@ -203,24 +178,20 @@ Scope {
                     }
                 }
 
-                // ---- slider#cc_brightness ----
                 PanelSlider {
                     id: brightness
                     glyph: "󰃠"
                     property real level: 0.5
                     value: level
-                    // The handle moves with the pointer; the backlight is
-                    // written from a timer. A drag fires onMoved once per
-                    // mouse move, and each write is a shell plus
-                    // brightnessctl - spawning fifty of those across one
-                    // swipe costs more than the whole rest of the panel.
+                    // Writes go through a timer, not straight from onMoved: a
+                    // drag fires onMoved once per pointer move, and each write
+                    // is a shell plus brightnessctl.
                     onMoved: v => {
                         level = v;
                         brightnessWrite.restart();
                     }
                 }
 
-                // ---- title#notif_title ----
                 Item {
                     Layout.fillWidth: true
                     implicitHeight: 34
@@ -261,7 +232,7 @@ Scope {
                         }
                     }
 
-                    Rectangle {   // border-bottom hairline under the title
+                    Rectangle {
                         anchors.bottom: parent.bottom
                         width: parent.width
                         height: 1
@@ -269,12 +240,9 @@ Scope {
                     }
                 }
 
-                // ---- notifications ----
-                // min-height 200 / max-height 460, scrolling inside that.
-                // The placeholder is a sibling of the Flickable, not a child:
-                // a child is parented to the content item, which is zero-high
-                // when the list is empty, so "No Notifications" ended up
-                // half-hidden behind the title rule.
+                // Placeholder text is a sibling of the Flickable, not a
+                // child - a child parents to the content item, which is
+                // zero-high when the list is empty.
                 Item {
                     Layout.fillWidth: true
                     Layout.preferredHeight:
@@ -290,7 +258,7 @@ Scope {
                         ColumnLayout {
                             id: notifList
                             width: parent.width
-                            spacing: 2 * Theme.cardGap   // .notification-background padding: 4px 0
+                            spacing: 2 * Theme.cardGap
 
                             Repeater {
                                 model: Notifications.list
@@ -303,7 +271,6 @@ Scope {
                         }
                     }
 
-                    // .control-center-list-placeholder
                     Text {
                         anchors.centerIn: parent
                         visible: Notifications.list.length === 0
@@ -315,23 +282,19 @@ Scope {
                     }
                 }
 
-                // ---- mpris ----
                 MprisPlayer { Layout.fillWidth: true }
             }
         }
     }
 
     // A PwNode's audio properties stay at their defaults until something
-    // asks pipewire to bind the node - without this the volume slider reads
-    // a flat zero and the mute toggles never change state. Tracking only the
-    // two default devices, so the bind cost does not scale with how many
-    // streams happen to be playing.
+    // asks pipewire to bind the node.
     PwObjectTracker {
         objects: [Pipewire.defaultAudioSink, Pipewire.defaultAudioSource]
     }
 
-    // Backlight is the one control here with no bus to listen to, so it is
-    // read once each time the panel opens rather than on a timer.
+    // The one control here with no bus to listen to, so it's read once per
+    // panel open rather than on a timer.
     Process {
         id: brightnessGet
         command: [Quickshell.env("HOME") + "/.config/swaync/scripts/brightness_get.sh"]
@@ -341,32 +304,25 @@ Scope {
                 if (isNaN(n))
                     return;
                 brightness.level = n / 100;
-                // Record it as already written, so the panel does not push a
-                // value back that it only just read, and so a drag away and
-                // back is not skipped as a no-op against a stale number.
+                // Marks it as already-written so a drag away and back isn't
+                // skipped as a no-op against a stale value.
                 brightnessWrite.last = n;
             }
         }
     }
     Process { id: brightnessSet }
 
-    // Coalescing window for the slider above: restarted on every drag event,
-    // so it only fires once the handle has been still for a moment. Short
-    // enough that a click on the trough still feels immediate.
+    // Restarted on every drag event; fires once the handle has settled.
     Timer {
         id: brightnessWrite
         interval: 60
         property int last: -1
         onTriggered: {
-            // One in flight is enough; come back when it has exited rather
-            // than reassigning command underneath a running process.
             if (brightnessSet.running) {
                 restart();
                 return;
             }
             const pct = Math.round(brightness.level * 100);
-            // A drag crosses the same percent many times over; only the
-            // changes are worth a process.
             if (pct === last)
                 return;
             last = pct;

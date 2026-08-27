@@ -4,15 +4,10 @@ import Quickshell
 import Quickshell.Io
 import "root:/"
 
-// The theme picker, which used to be a wofi --dmenu spawned by
-// theme-switcher.sh. wofi cold-starts on every open and, as a layer surface,
-// could only be dismissed by the close_on_focus_loss hack; this is an xdg
-// popup in a process that is already running, so it appears instantly and a
-// click anywhere outside closes it.
-//
-// Applying still goes through theme-switcher.sh: apply-theme.sh restyles
-// kitty, hyprlock, starship and the rest in one pass, and the script is the
-// same entry point a keybind or a terminal uses.
+// The theme picker, replacing a wofi --dmenu spawned by theme-switcher.sh.
+// This is an xdg popup in an already-running process, so it opens instantly
+// and dismisses on an outside click. Applying still goes through
+// theme-switcher.sh/apply-theme.sh, the same entry point a keybind uses.
 PopupShell {
     id: root
 
@@ -62,9 +57,8 @@ PopupShell {
 
             readonly property bool active: fileName === root.current
 
-            // theme.json is a few hundred bytes and there are ten of them, so
-            // they are read synchronously rather than making the list pop in
-            // one name at a time as the reads land.
+            // Read synchronously - a few hundred bytes each, ten of them - so
+            // the list doesn't pop in one name at a time.
             FileView {
                 id: meta
                 path: root.base + "/themes/" + row.fileName + "/theme.json"
@@ -78,9 +72,7 @@ PopupShell {
                 }
             }
 
-            // \uf111 filled dot for the active theme, \uf10c hollow for the
-            // rest - the same "this one is on" marker the shell script
-            // drew with a bullet.
+            // Filled dot for the active theme, hollow for the rest.
             glyph: active ? "\uf111" : "\uf10c"
             label: pretty
             // dynamic builds its palette from a wallpaper you pick, so it

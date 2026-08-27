@@ -1,10 +1,10 @@
 import "root:/"
 
 // waybar's custom/openbracket and custom/closebracket: a literal "[" or "]"
-// wrapped around a group.
+// around a group.
 //
-// It takes its height from the group and centres the glyph inside that, rather
-// than being sized to the glyph and then anchored. "[" and "]" have taller ink
-// than lowercase text and sit differently on the baseline, so centring the box
-// instead of the text left them visibly off from the label beside them.
+// Takes its height from the group and centres the glyph in that box, rather
+// than sizing to the glyph and anchoring - "[" and "]" sit on the baseline
+// differently than lowercase text, so centring the text directly left them
+// visibly off from the label beside them.
 BarText {}

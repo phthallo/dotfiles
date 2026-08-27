@@ -1,13 +1,10 @@
 import QtQuick
 import Quickshell.Io
 
-// waybar's cpu and memory modules, both polled every 2s and both opening btop
-// on click.
-//
-// waybar computed these itself; here they come from /proc directly. CPU usage
-// is a delta between samples - /proc/stat counts cumulative jiffies since
-// boot, so a single read tells you the average since power-on, which is not
-// what anyone means by "CPU:12%".
+// waybar's cpu and memory modules: polled every 2s from /proc, both opening
+// btop on click. CPU usage is a delta between samples - /proc/stat counts
+// cumulative jiffies since boot, so a single read gives the average since
+// power-on, not what "CPU:12%" means.
 BarText {
     id: root
 
@@ -42,10 +39,8 @@ BarText {
                 return;
 
             if (root.kind === "cpu") {
-                // user nice system idle iowait irq softirq steal
-                // Only the aggregate "cpu" line matters, and this file has
-                // one more line per core; slicing first keeps the parse off
-                // the other ~20 lines every two seconds.
+                // Only the aggregate "cpu" line matters; slicing it off first
+                // skips parsing the ~20 per-core lines below it.
                 const f = text.slice(0, text.indexOf("\n")).trim()
                     .split(/\s+/).slice(1).map(Number);
                 const idle = f[3] + f[4];
@@ -57,9 +52,8 @@ BarText {
                 if (dTotal > 0)
                     root.usage = Math.round(100 * (dTotal - dIdle) / dTotal);
             } else {
-                // MemAvailable, not MemFree: free excludes cache and page
-                // buffers, which would report this machine as ~90% used at
-                // idle and make the number meaningless.
+                // MemAvailable, not MemFree: free excludes cache/buffers,
+                // which reports ~90% used at idle.
                 const get = key => {
                     const m = text.match(new RegExp("^" + key + ":\\s+(\\d+)", "m"));
                     return m ? Number(m[1]) : 0;

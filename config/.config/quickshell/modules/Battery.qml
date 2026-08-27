@@ -4,9 +4,8 @@ import Quickshell.Io
 import Quickshell.Services.UPower
 import "root:/"
 
-// waybar's battery module. The icon ramp and the warning/critical thresholds
-// carry over verbatim (30% and 15%), as does the click target - the logout
-// menu, which is an odd place to hang it but is where muscle memory is.
+// waybar's battery module: same icon ramp and warning/critical thresholds
+// (30%/15%), and clicking still opens the logout menu.
 BarText {
     id: root
 
@@ -21,18 +20,15 @@ BarText {
         : false
     readonly property bool critical: percent <= 15 && !charging && !plugged
 
-    readonly property var icons: ["\uF244", "\uF243", "\uF242", "\uF241", "\uF240"]
+    readonly property var icons: ["", "", "", "", ""]
 
-    text: (charging ? "\uF5E7"
-         : plugged ? "\uF1E6 "
+    text: (charging ? ""
+         : plugged ? " "
          : icons[Math.min(4, Math.floor(percent / 20))])
         + " " + percent + "%"
 
-    // #battery.charging and .plugged filled the cell green with the bar
-    // background as ink; .critical:not(.charging) filled it red. waybar also
-    // blinked the critical state, which is left out deliberately - an
-    // animation that never stops is not something to put on a bar you look at
-    // all day.
+    // No blink on critical, unlike waybar - not something worth animating
+    // forever on a bar you look at all day.
     chipColor: charging || plugged ? Theme.green
              : critical ? Theme.red
              : "transparent"

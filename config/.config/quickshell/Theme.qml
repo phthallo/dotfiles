@@ -4,26 +4,17 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// The palette, read straight from theme-switcher rather than generated into QML.
-//
-// Every other consumer on this desktop (wofi, swaync, kitty, starship...) gets
-// a file rendered for it by apply-theme.sh from a .tpl. That indirection exists
-// because those programs read static stylesheets and have to be SIGHUP'd or
-// restarted to pick up a change. QML does not have that problem: FileView with
-// watchChanges re-reads on write and every binding downstream updates itself.
-//
-// So this reads the theme's colors.json directly. apply-theme.sh needs no
-// quickshell target at all, there is no generated file to gitignore, and a
-// theme switch recolours the bar in the same frame it recolours everything
-// else - no restart, no flash.
+// The palette, read straight from theme-switcher's colors.json. FileView with
+// watchChanges re-reads on write, so unlike wofi/swaync/kitty/starship (which
+// need a rendered file and a restart), a theme switch recolours everything
+// here in the same frame.
 Singleton {
     id: root
 
     readonly property string base: Quickshell.env("HOME") + "/.config/theme-switcher"
 
-    // Which theme is active. apply-theme.sh rewrites this file on every switch,
-    // which is what makes the whole chain reactive: this reloads, themeName
-    // changes, the colours FileView's path changes, and it reloads in turn.
+    // apply-theme.sh rewrites this on every switch; it reloads, themeName
+    // changes, and the colours FileView's path changes and reloads in turn.
     FileView {
         path: root.base + "/current-theme.json"
         watchChanges: true
@@ -45,9 +36,8 @@ Singleton {
         watchChanges: true
         onFileChanged: reload()
         // Defaults are gruvbox, so a missing or half-written colors.json
-        // degrades to a readable bar instead of a black-on-black one. A theme
-        // switch rewrites this file, and there is a window where a partial
-        // read is possible.
+        // (there's a window mid-switch where that's possible) degrades to a
+        // readable bar instead of black-on-black.
         JsonAdapter {
             id: c
             property string bg: "#282828"
@@ -92,71 +82,52 @@ Singleton {
     readonly property color overlay: c.overlay
     readonly property color shadow: c.shadow
 
-    // The numbers waybar's stylesheet hardcoded, kept in one place so the
-    // islands, the notification popups and the launcher stay on one rhythm.
-    // 20 is gaps_out in hyprland.conf - the shell sits off each edge by the
-    // same amount a tiled window does.
+    // waybar's hardcoded numbers, kept in one place. gap matches gaps_out in
+    // hyprland.conf.
     readonly property int gap: 20
     readonly property int radius: 7
     readonly property int borderWidth: 2
     readonly property int barHeight: 50
-    // The islands sit inside barHeight, below the top gap - waybar's
-    // height:50 was the whole strip, not the height of a group.
     readonly property int islandHeight: barHeight - gap
-    // Loading the .ttf by path rather than trusting the family name: Qt
-    // resolves "0xProto Nerd Font" to the Propo cut, whose icon glyphs carry a
-    // 1.0-1.15em advance, so every Nerd Font icon on the bar sat ~6px wider
-    // than waybar's. Pango picks the base cut (0.62em advance for every glyph,
-    // icons drawn full size and allowed to overflow their cell). The Mono cut
-    // has the right advance but shrinks the icon ink to half size.
+    // Loaded by path rather than family name: Qt resolves "0xProto Nerd Font"
+    // to the Propo cut (1.0-1.15em icon advance, ~6px wider than waybar's
+    // Pango-rendered bar). The Mono cut has the right advance but halves icon
+    // ink. This loads the base cut directly.
     property FontLoader nerdFont: FontLoader {
         source: "file:///usr/share/fonts/0xProto/0xProtoNerdFont-Regular.ttf"
     }
     readonly property string fontFamily: nerdFont.status === FontLoader.Ready
         ? nerdFont.name : "0xProto Nerd Font"
     readonly property int fontSize: 15
-    // 0xProto advances every glyph 0.62em: 9.3px at this size, which Pango
-    // floors to 9 and Qt rounds to 10. Without this the bar drifts a pixel
-    // wider per character than waybar's.
+    // 0xProto advances 0.62em (9.3px at this size); Pango floors to 9, Qt
+    // rounds to 10. This keeps the bar from drifting a pixel wider per
+    // character than waybar's.
     readonly property real letterSpacing: -1
 
-    // Clear space either side of the ink of every item in the bar - modules,
-    // separators and the group brackets alike. BarText measures the glyphs
-    // rather than their advances, so the gap between any two neighbours is
-    // twice this everywhere, and an item at the end of an island sits exactly
-    // half a gap from the border.
-    //
-    // waybar's stylesheet had no such rule: its per-module padding ran 0, 5
-    // and 10 depending on which module it was, which put 5px between the
-    // theme switcher and the separator beside it and 20px between the wifi
-    // and bluetooth icons. Matching that faithfully reproduced the
-    // unevenness, so this is a deliberate departure from it.
+    // Clear space either side of an item's ink (not its font advance) - every
+    // module, separator and group bracket. Neighbours end up twice this
+    // apart. waybar's per-module padding ran 0/5/10px inconsistently; this is
+    // a deliberate, uniform departure from that.
     readonly property int itemPad: 10
 
-    // Chrome rhythm, copied from templates/shared/chrome.css.tpl - the same
-    // numbers swaync and wofi are told to repeat literally, because GTK3 has
-    // no way to share a length. QML can, so panels take them from here.
-    readonly property int panelWidth: 420      // control-center-width
-    // Panels and cards round like a hyprland window (decoration:rounding),
-    // not like the bar islands: they float over the desktop at gaps_out from
-    // the edge, so they are read against the windows beside them.
+    // Chrome rhythm, copied from templates/shared/chrome.css.tpl.
+    readonly property int panelWidth: 420
+    // Panels round like a hyprland window, not like the bar islands - they
+    // float over the desktop at gaps_out, read against windows beside them.
     readonly property int panelRadius: 10
-    readonly property int pillRadius: 999      // troughs, handles, close buttons
-    readonly property int panelPad: 16         // panel gutter
-    readonly property int blockGap: 14         // between widget blocks
-    readonly property int cardGap: 4           // between sibling cards
+    readonly property int pillRadius: 999
+    readonly property int panelPad: 16
+    readonly property int blockGap: 14
+    readonly property int cardGap: 4
     readonly property int panelFontSize: 15
 
-    // One open animation for every dropped-down surface - the control center,
-    // the wifi/bluetooth lists, the theme picker. They fade in and settle down
-    // by openSlide px; closing is immediate, because the compositor tears a
-    // grabbing popup down the moment the click lands outside and there is no
-    // way to hold it open for an outro.
+    // Shared open animation for every dropped-down surface. Closing is
+    // instant - the compositor tears a grabbing popup down the moment the
+    // click lands outside, leaving no room for an outro.
     readonly property int openDuration: 140
     readonly property int openSlide: 8
 
-    // shade(@cc_bg, 1.08) and 1.10 in the swaync stylesheet: cards sit one
-    // step above the panel, grid buttons one step above that.
+    // shade(@cc_bg, 1.08) / 1.10 from the swaync stylesheet.
     function shade(c, f) {
         return Qt.rgba(Math.min(1, c.r * f), Math.min(1, c.g * f),
                        Math.min(1, c.b * f), c.a);

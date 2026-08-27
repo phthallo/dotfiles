@@ -4,10 +4,6 @@ import "root:/"
 
 // Shared look for every textual item on the bar, plus the click handling
 // waybar expressed as on-click/on-click-right/on-click-middle.
-//
-// chipColor gives an item the filled-pill treatment waybar applied through
-// CSS classes - #battery.charging, #mpris.playing, #workspaces button.active
-// all set a background-color and flipped the text to the bar background.
 Text {
     id: root
 
@@ -15,13 +11,13 @@ Text {
     property var onRight: null
     property var onMiddle: null
 
-    // Extra width to reserve beyond the label itself, for anything an item
-    // draws outside its own text. The bell's superscript count is the only
-    // one; without it the group's closing bracket sits on top of the count.
-    // real, not int: the count is 4.6px wide and rounding it down to 4 left
-    // it leaning half a pixel on the glyph it belongs to.
+    // Extra width to reserve for anything an item draws outside its own text
+    // - the bell's superscript count is the only user. real, not int: a 4.6px
+    // count rounded down to 4 leaned half a pixel onto its glyph.
     property real extraWidth: 0
 
+    // Fills an item with the pill treatment waybar applied via CSS classes
+    // (#battery.charging, #mpris.playing, #workspaces button.active).
     property color chipColor: "transparent"
     property int chipRadius: 2
 
@@ -30,35 +26,17 @@ Text {
     font.letterSpacing: Theme.letterSpacing
     font.pixelSize: Theme.fontSize
     verticalAlignment: Text.AlignVCenter
-    // Fill the group's height so every label centres against the same
-    // box; without it each one centres on its own glyph metrics and
-    // items with different ink heights sit at different offsets.
+    // Fills the group's height so every label centres against the same box
+    // instead of its own glyph metrics.
     Layout.fillHeight: true
-    // Every item reserves exactly `pad` of clear space on each side of the
-    // ink it actually paints, so one padding value produces one gap right
-    // across the bar.
-    //
-    // Padding the advance instead does not, because in this font the advance
-    // and the ink are barely related: every glyph advances 8.3px, while "|"
-    // paints 3px of it and a Nerd Font icon paints 15-19px, spilling several
-    // pixels out either side. Padding those equally left a run of icons 12px
-    // apart on screen and a run of digits 24px apart. (waybar had it worse
-    // still - it laid each label out in one monospace cell per character,
-    // which put a 19px icon in a 9px box.)
-    //
-    // So the padding absorbs the difference: shift the text right by the
-    // ink's left bearing, and make up the rest on the right. The width that
-    // falls out is pad + ink + pad, which is what implicitWidth needs to be
-    // in a plain Row as well as in a RowLayout.
-    //
-    // The right side subtracts contentWidth and not the advance, because for
-    // the icons those two disagree - Qt lays a 15px icon out 14.3px wide
-    // while the font still calls its advance 8.3 - and it is contentWidth
-    // that implicitWidth is actually built from.
-    //
-    // An item with nothing to say takes no room at all, padding included -
-    // the window title is empty whenever nothing is focused, and a bare
-    // `pad + pad` left a 20px hole between the centre island's brackets.
+
+    // Pads the glyph's actual ink, not its font advance - in this font the
+    // two barely relate ("|" paints 3px of an 8.3px advance, a Nerd Font icon
+    // paints 15-19px and spills past it). Padding the advance instead left
+    // icons 12px apart and digits 24px apart on screen. So: shift text right
+    // by the ink's left bearing, and pad the right from contentWidth (not the
+    // advance - Qt lays some icons out wider than the font reports). An empty
+    // string gets no padding either, so a blank title doesn't leave a hole.
     property int pad: Theme.itemPad
     TextMetrics {
         id: metrics
@@ -72,8 +50,8 @@ Text {
     Layout.preferredWidth: implicitWidth + extraWidth
 
     Rectangle {
-        // z below the text but still inside it, so the chip tracks the label's
-        // size including its padding without a separate layout item.
+        // Below the text but still inside it, so the chip tracks the label's
+        // padded size without a separate layout item.
         z: -1
         anchors.fill: parent
         color: root.chipColor
@@ -83,9 +61,6 @@ Text {
 
     MouseArea {
         anchors.fill: parent
-        // Listing every button here rather than only the ones a given item
-        // uses keeps this one component usable everywhere; unbound buttons
-        // fall through to a null check below.
         acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
         hoverEnabled: true
         cursorShape: (root.onLeft || root.onRight || root.onMiddle)

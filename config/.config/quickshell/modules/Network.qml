@@ -4,16 +4,12 @@ import Quickshell.Networking
 import "root:/"
 import "root:/popups"
 
-// waybar's network module. It polled nmcli twice every five seconds - once
-// for the device list, once for the signal strength - because waybar had no
-// way to watch NetworkManager. Quickshell.Networking is the same daemon over
-// the bus, so this now costs nothing until something actually changes.
-//
-// Clicking it drops down the wifi picker rather than launching `kitty -e
-// nmtui`, which is what the waybar config had to do.
+// waybar's network module. Reads NetworkManager over the bus via
+// Quickshell.Networking instead of polling nmcli every 5s, so it costs
+// nothing until something actually changes. Click drops down the wifi picker
+// instead of launching `kitty -e nmtui`.
 BarText {
     id: root
-
 
     readonly property var wired: {
         for (const d of Networking.devices.values)
@@ -51,10 +47,9 @@ BarText {
 
     NetworkPopup {
         id: popup
-        // Anchored to the icon itself rather than to a hand-computed
-        // offset in the bar window: mapToItem is not a binding, so a
-        // position worked out once never moves again when the module
-        // beside it changes width.
+        // Anchored to the icon itself, not a computed offset - mapToItem
+        // isn't a binding, so a fixed offset wouldn't track the module
+        // resizing.
         anchor.item: root
     }
 }

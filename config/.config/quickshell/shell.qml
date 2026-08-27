@@ -5,17 +5,12 @@ import Quickshell.Hyprland
 import Quickshell.Io
 import "modules"
 
-// Entry point. `qs` loads this file and nothing else - everything below is
-// reached from here.
-//
-// Porting notes and the waybar/swaync/nwg-dock handover live in README.md
-// next to this file; the short version is that this cannot share a session
-// with waybar or nwg-dock (both would draw the same thing twice) or with
-// swaync (only one process can own the notification bus name).
+// Entry point - `qs` loads this file and nothing else. Can't share a session
+// with waybar or nwg-dock (would draw the same thing twice) or swaync (only
+// one process can own the notification bus name). See README.md.
 ShellRoot {
     id: root
 
-    // One of each per monitor, created and destroyed as monitors come and go.
     Variants {
         model: Quickshell.screens
         Bar {}
@@ -26,9 +21,9 @@ ShellRoot {
         Dock {}
     }
 
-    // Toasts and the control center are one per session, not one per monitor:
+    // Toasts and the control center are one per session, not per monitor -
     // swaync put them on the focused output, and duplicating them means two
-    // panels opening at once and two copies of every toast to dismiss.
+    // panels and two copies of every toast.
     readonly property var focusedScreen: {
         const name = Hyprland.focusedMonitor?.name;
         for (const screen of Quickshell.screens)
@@ -37,17 +32,8 @@ ShellRoot {
         return Quickshell.screens[0] ?? null;
     }
 
-    // Both are built the first time they are wanted and torn down again
-    // afterwards. Measured on this machine the saving is small - about 1.2MB
-    // off an idle shell - because an unmapped Wayland surface is cheap and
-    // neither tree is large. It is kept anyway because it costs nothing at
-    // runtime and it is the only part of the shell that grows: every future
-    // toast, card and toggle added to these two now costs nothing until
-    // something actually opens them.
-    //
-    // active, not loading: the panel has to exist by the time the frame that
-    // opens it is drawn, and both trees are small enough that building them
-    // on the spot is not a stutter you can see.
+    // Built on first use and torn down after, so future additions to either
+    // tree cost nothing until something opens them.
     LazyLoader {
         active: Notifications.popups.length > 0
         NotificationPopups { modelData: root.focusedScreen }

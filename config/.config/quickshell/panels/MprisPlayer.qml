@@ -19,8 +19,7 @@ Item {
         player?.playbackState === MprisPlaybackState.Playing
 
     // Gone, not greyed out, when nothing is playing - a paused player still
-    // counts, since the card is how you resume it. The bar's little mpris
-    // chip is the always-there one.
+    // counts, since the card is how you resume it.
     visible: !!player
         && player.playbackState !== MprisPlaybackState.Stopped
         && !!player.trackTitle
@@ -44,14 +43,10 @@ Item {
             radius: Theme.panelRadius
             color: Theme.bg
 
-            // Decoded at 64px and blown back up, because it is about to be
-            // put through a 34px blur at 40% opacity - nothing survives that
-            // which a thumbnail would not have carried. Without a sourceSize
-            // this decoded the art at whatever the player published, which
-            // for a 3000px cover is 36MB of pixels held for a tint. It also
-            // happens to be the same size the cover below asks for, and Qt
-            // keys its image cache on source *and* size, so the two share one
-            // decode instead of each keeping their own.
+            // Decoded at 64px: it's going through a 34px blur at 40% opacity,
+            // so a full-res decode (36MB for a 3000px cover) buys nothing.
+            // Also matches the cover's sourceSize below, so Qt's image cache
+            // (keyed on source+size) shares one decode between them.
             Image {
                 id: art
                 anchors.fill: parent
@@ -96,10 +91,8 @@ Item {
                 Layout.fillWidth: true
                 spacing: 14
 
-                // Only ever a real cover. swaync drew a music-note fallback
-                // whenever a player had no art, which filled a chunk of the
-                // card with a glyph; here the slot simply collapses and the
-                // text takes the full width.
+                // No music-note fallback like swaync's - the slot just
+                // collapses and the text takes the full width.
                 Image {
                     id: cover
                     Layout.preferredWidth: 64
