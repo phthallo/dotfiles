@@ -1,79 +1,62 @@
 import QtQuick
-import Quickshell.Io
+import Quickshell
+import Quickshell.Networking
 import "root:/"
+import "root:/popups"
 
-// waybar's network module, which read the interface directly. Quickshell has
-// no network service, so this polls nmcli - which is also what the click
-// target (nmtui) talks to, so the two can never disagree about state.
+// waybar's network module. It polled nmcli twice every five seconds - once
+// for the device list, once for the signal strength - because waybar had no
+// way to watch NetworkManager. Quickshell.Networking is the same daemon over
+// the bus, so this now costs nothing until something actually changes.
+//
+// Clicking it drops down the wifi picker rather than launching `kitty -e
+// nmtui`, which is what the waybar config had to do.
 BarText {
-    leftPadding: 10
-    rightPadding: 10
     id: root
 
-    property string kind: "disconnected"   // wifi | ethernet | disconnected
-    property int strength: 0
+    leftPadding: 10
+    rightPadding: 10
+
+    readonly property var wired: {
+        for (const d of Networking.devices.values)
+            if (d.type === DeviceType.Wired && d.connected) return d;
+        return null;
+    }
+
+    readonly property var wifi: {
+        for (const d of Networking.devices.values)
+            if (d.type === DeviceType.Wifi) return d;
+        return null;
+    }
+
+    readonly property var activeAp: {
+        if (!wifi || !wifi.connected) return null;
+        for (const n of wifi.networks.values)
+            if (n.connected) return n;
+        return null;
+    }
+
+    // Ethernet wins if both are up: it is the one actually carrying traffic
+    // when a dock is plugged in.
+    readonly property string kind: wired ? "ethernet"
+        : activeAp ? "wifi" : "disconnected"
 
     readonly property var wifiIcons: ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"]
 
-    text: kind === "wifi" ? wifiIcons[Math.min(4, Math.floor(strength / 25))]
+    text: kind === "wifi"
+            ? wifiIcons[Math.min(4, Math.floor(activeAp.signalStrength / 25))]
         : kind === "ethernet" ? "󰈀 LAN"
         : "󰖪"
     color: kind === "disconnected" ? Theme.fgDim : Theme.fg
 
-    onLeft: () => nmtui.running = true
+    onLeft: () => popup.visible = !popup.visible
 
-    Process {
-        id: nmtui
-        command: ["kitty", "-e", "nmtui"]
-    }
-
-    Process {
-        id: poll
-        // TYPE:STATE:SIGNAL for every device, terse and colon-separated so it
-        // parses without caring about locale or column widths.
-        command: ["nmcli", "-t", "-f", "TYPE,STATE,CONNECTION", "device"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                let kind = "disconnected";
-                for (const line of this.text.trim().split("\n")) {
-                    const [type, state] = line.split(":");
-                    if (state !== "connected")
-                        continue;
-                    // Ethernet wins if both are up: it is the one actually
-                    // carrying traffic when a dock is plugged in.
-                    if (type === "ethernet") {
-                        kind = "ethernet";
-                        break;
-                    }
-                    if (type === "wifi")
-                        kind = "wifi";
-                }
-                root.kind = kind;
-                if (kind === "wifi")
-                    signalPoll.running = true;
-            }
-        }
-    }
-
-    Process {
-        id: signalPoll
-        command: ["nmcli", "-t", "-f", "ACTIVE,SIGNAL", "device", "wifi"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                // ACTIVE is yes/no rather than IN-USE's "*" in a padded
-                // column, so this does not depend on nmcli's formatting.
-                const active = this.text.trim().split("\n").find(l => l.startsWith("yes:"));
-                if (active)
-                    root.strength = Number(active.split(":")[1]) || 0;
-            }
-        }
-    }
-
-    Timer {
-        interval: 5000
-        running: true
-        repeat: true
-        triggeredOnStart: true
-        onTriggered: poll.running = true
+    NetworkPopup {
+        id: popup
+        // Anchored to the icon itself rather than to a hand-computed
+        // offset in the bar window: mapToItem is not a binding, so a
+        // position worked out once never moves again when the module
+        // beside it changes width.
+        anchor.item: root
     }
 }

@@ -123,4 +123,26 @@ Singleton {
     // advance that Pango collapses to a single cell while still drawing the
     // full-size glyph; clamping an icon label to this reproduces that.
     readonly property int cellWidth: 9
+
+    // Chrome rhythm, copied from templates/shared/chrome.css.tpl - the same
+    // numbers swaync and wofi are told to repeat literally, because GTK3 has
+    // no way to share a length. QML can, so panels take them from here.
+    readonly property int panelWidth: 420      // control-center-width
+    readonly property int panelRadius: 12      // panels and cards
+    readonly property int pillRadius: 999      // troughs, handles, close buttons
+    readonly property int panelPad: 16         // panel gutter
+    readonly property int blockGap: 14         // between widget blocks
+    readonly property int cardGap: 4           // between sibling cards
+    readonly property int panelFontSize: 15
+
+    // shade(@cc_bg, 1.08) and 1.10 in the swaync stylesheet: cards sit one
+    // step above the panel, grid buttons one step above that.
+    function shade(c, f) {
+        return Qt.rgba(Math.min(1, c.r * f), Math.min(1, c.g * f),
+                       Math.min(1, c.b * f), c.a);
+    }
+    readonly property color card: shade(bg, 1.08)
+    readonly property color raised: shade(bg, 1.10)
+    readonly property color raisedHover: shade(bg, 1.35)
+    readonly property color hairline: Qt.rgba(1, 1, 1, 0.10)
 }

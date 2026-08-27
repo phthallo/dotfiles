@@ -45,7 +45,11 @@ BarText {
 
             if (root.kind === "cpu") {
                 // user nice system idle iowait irq softirq steal
-                const f = text.split("\n")[0].trim().split(/\s+/).slice(1).map(Number);
+                // Only the aggregate "cpu" line matters, and this file has
+                // one more line per core; slicing first keeps the parse off
+                // the other ~20 lines every two seconds.
+                const f = text.slice(0, text.indexOf("\n")).trim()
+                    .split(/\s+/).slice(1).map(Number);
                 const idle = f[3] + f[4];
                 const total = f.reduce((a, b) => a + b, 0);
                 const dIdle = idle - root.lastIdle;

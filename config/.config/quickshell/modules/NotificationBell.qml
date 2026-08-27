@@ -16,6 +16,10 @@ BarText {
     font.pixelSize: Theme.fontSize + 1   // #custom-swaync: 16px
     leftPadding: 5
     rightPadding: 10
+    // The superscript is drawn outside the label, so its cells have to be
+    // added by hand or the closing bracket sits on top of the count.
+    cells: 1 + (Notifications.list.length > 0
+                ? String(Notifications.list.length).length : 0)
 
     onLeft: () => Notifications.panelOpen = !Notifications.panelOpen
     onRight: () => Notifications.dnd = !Notifications.dnd
@@ -28,7 +32,7 @@ BarText {
         anchors.bottom: parent.verticalCenter
         color: Theme.accent
         font.family: Theme.fontFamily
-    font.letterSpacing: Theme.letterSpacing
+        font.letterSpacing: Theme.letterSpacing
         font.pixelSize: Math.round(Theme.fontSize * 0.6)
     }
 }
