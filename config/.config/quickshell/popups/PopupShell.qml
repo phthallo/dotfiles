@@ -50,9 +50,10 @@ PopupWindow {
     // under a bar item near the edge puts its border flush against the screen
     // - and the theme switcher lives in the left island, so it always was.
     // SlideX only promises the window lands *on* screen, not gaps_out from
-    // it. Masking a wider window down to a padded card was the other way to
-    // do this, and it cost the control center every click it should have
-    // taken, so the window stays exactly the size of what it draws.
+    // it. Masking a wider window down to a padded card is the other way to
+    // do this and works fine - a Region mask does pass the clicks outside it
+    // through, checked directly - but a window that is already the size of
+    // what it draws needs no mask at all, so this does that instead.
     //
     // Run once per open: bar items only move when the bar relayouts, which
     // cannot happen while a grabbing popup holds the pointer.
@@ -97,11 +98,25 @@ PopupWindow {
         border.width: Theme.borderWidth
         border.color: Theme.borderActive
 
-        Column {
-            id: inner
+        // The height cap above is a cap on the window, not on the content:
+        // without something to scroll, a wifi list longer than 600px simply
+        // ran off the bottom edge and the networks past it could not be
+        // reached at all. interactive only while it overflows, so a short
+        // list does not drift under the pointer.
+        Flickable {
+            id: scroll
             anchors.fill: parent
             anchors.margins: Theme.panelPad
-            spacing: Theme.cardGap
+            contentHeight: inner.implicitHeight
+            interactive: contentHeight > height
+            clip: true
+            boundsBehavior: Flickable.StopAtBounds
+
+            Column {
+                id: inner
+                width: scroll.width
+                spacing: Theme.cardGap
+            }
         }
     }
 }

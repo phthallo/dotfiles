@@ -146,6 +146,11 @@ PanelWindow {
                         readonly property var candidates:
                             Icons.appIconCandidates(button.appClass)
                         property int attempt: 0
+                        // A new list starts the walk over. Without this an
+                        // icon that fell through to the executable fallback
+                        // stays on it after a theme switch hands back a list
+                        // where the first candidate now resolves.
+                        onCandidatesChanged: attempt = 0
                         source: candidates[Math.min(attempt,
                                                     candidates.length - 1)]
                         onStatusChanged: {

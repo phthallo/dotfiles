@@ -69,9 +69,9 @@ Scope {
 
         // Anchored to two edges only, and exactly as tall as its content:
         // the window IS the card. It used to span to the bottom of the
-        // screen with a mask cutting the input region down to the card,
-        // which left every click falling through to the backdrop below -
-        // the whole panel read as dead. Nothing to mask now.
+        // screen with a mask cutting the input region down to the card;
+        // that worked, but a window already the size of what it draws needs
+        // no mask at all, so there is one less thing to keep in step.
         anchors.top: true
         anchors.right: true
         margins.top: Theme.gap
@@ -204,13 +204,14 @@ Scope {
                     glyph: "󰃠"
                     property real level: 0.5
                     value: level
+                    // The handle moves with the pointer; the backlight is
+                    // written from a timer. A drag fires onMoved once per
+                    // mouse move, and each write is a shell plus
+                    // brightnessctl - spawning fifty of those across one
+                    // swipe costs more than the whole rest of the panel.
                     onMoved: v => {
                         level = v;
-                        brightnessSet.command = [
-                            Quickshell.env("HOME") + "/.config/swaync/scripts/brightness_set.sh",
-                            String(Math.round(v * 100))
-                        ];
-                        brightnessSet.running = true;
+                        brightnessWrite.restart();
                     }
                 }
 
@@ -332,11 +333,45 @@ Scope {
         stdout: StdioCollector {
             onStreamFinished: {
                 const n = parseInt(text.trim());
-                if (!isNaN(n)) brightness.level = n / 100;
+                if (isNaN(n))
+                    return;
+                brightness.level = n / 100;
+                // Record it as already written, so the panel does not push a
+                // value back that it only just read, and so a drag away and
+                // back is not skipped as a no-op against a stale number.
+                brightnessWrite.last = n;
             }
         }
     }
     Process { id: brightnessSet }
+
+    // Coalescing window for the slider above: restarted on every drag event,
+    // so it only fires once the handle has been still for a moment. Short
+    // enough that a click on the trough still feels immediate.
+    Timer {
+        id: brightnessWrite
+        interval: 60
+        property int last: -1
+        onTriggered: {
+            // One in flight is enough; come back when it has exited rather
+            // than reassigning command underneath a running process.
+            if (brightnessSet.running) {
+                restart();
+                return;
+            }
+            const pct = Math.round(brightness.level * 100);
+            // A drag crosses the same percent many times over; only the
+            // changes are worth a process.
+            if (pct === last)
+                return;
+            last = pct;
+            brightnessSet.command = [
+                Quickshell.env("HOME") + "/.config/swaync/scripts/brightness_set.sh",
+                String(pct)
+            ];
+            brightnessSet.running = true;
+        }
+    }
 
     Connections {
         target: Notifications
