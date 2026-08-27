@@ -14,8 +14,8 @@ BarText {
         ? Theme.accent : Theme.fg
 
     font.pixelSize: Theme.fontSize + 1   // #custom-swaync: 16px
-    // The superscript hangs off the right edge of the label, so its width
-    // has to be reserved by hand or the closing bracket lands on top of it.
+    // The superscript sits outside the glyph, so its width has to be
+    // reserved by hand or the closing bracket lands on top of it.
     extraWidth: sup.visible ? sup.implicitWidth : 0
 
     onLeft: () => Notifications.panelOpen = !Notifications.panelOpen
@@ -26,7 +26,14 @@ BarText {
         id: sup
         visible: Notifications.list.length > 0
         text: Notifications.list.length
-        anchors.left: parent.right
+        // Anchored to the item's right edge and inset by the same padding
+        // every other item keeps clear, which lands it exactly in the
+        // extraWidth reserved above - just past the bell, with a full gap
+        // after it. Anchoring to parent.right without the inset put it
+        // beyond the item entirely, so the reserved width became a hole to
+        // its left and the count still leaned on the next item.
+        anchors.right: parent.right
+        anchors.rightMargin: root.pad
         anchors.bottom: parent.verticalCenter
         color: Theme.accent
         font.family: Theme.fontFamily

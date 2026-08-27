@@ -14,12 +14,6 @@ Rectangle {
     id: root
 
     default property alias content: inner.data
-    // Zero by default: every item in the bar carries Theme.itemPad on
-    // both its sides, so the first and last already sit half a gap in
-    // from the border without the island adding more.
-    property int leftPad: 0
-    property int rightPad: 0
-
     color: Theme.bg
     radius: Theme.radius
     border.width: Theme.borderWidth
@@ -28,16 +22,19 @@ Rectangle {
     // instead gave a visibly different hue.
     border.color: Qt.rgba(Theme.green.r, Theme.green.g, Theme.green.b, 0.8)
 
-    // CSS padding sits inside the border, so the border's own 2px counts on
-    // both sides; without it every label sat 2px left of waybar's.
-    implicitWidth: inner.implicitWidth + leftPad + rightPad + 2 * border.width
+    // The border's own 2px counts on both sides, the way CSS padding sits
+    // inside a border; without it every label sat 2px left of waybar's.
+    // Nothing else: every item in the bar carries Theme.itemPad on both its
+    // sides, so the first and last already sit half a gap in from the
+    // border without the island adding padding of its own.
+    implicitWidth: inner.implicitWidth + 2 * border.width
     implicitHeight: Theme.islandHeight
 
     RowLayout {
         id: inner
         anchors.verticalCenter: parent.verticalCenter
         anchors.left: parent.left
-        anchors.leftMargin: root.leftPad + root.border.width
+        anchors.leftMargin: root.border.width
         // Modules carry their own padding, the way waybar's per-module
         // `padding: 0 10px` rules did; a gap here would double-count.
         spacing: 0

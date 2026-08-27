@@ -18,7 +18,9 @@ Text {
     // Extra width to reserve beyond the label itself, for anything an item
     // draws outside its own text. The bell's superscript count is the only
     // one; without it the group's closing bracket sits on top of the count.
-    property int extraWidth: 0
+    // real, not int: the count is 4.6px wide and rounding it down to 4 left
+    // it leaning half a pixel on the glyph it belongs to.
+    property real extraWidth: 0
 
     property color chipColor: "transparent"
     property int chipRadius: 2
@@ -53,15 +55,20 @@ Text {
     // the icons those two disagree - Qt lays a 15px icon out 14.3px wide
     // while the font still calls its advance 8.3 - and it is contentWidth
     // that implicitWidth is actually built from.
+    //
+    // An item with nothing to say takes no room at all, padding included -
+    // the window title is empty whenever nothing is focused, and a bare
+    // `pad + pad` left a 20px hole between the centre island's brackets.
     property int pad: Theme.itemPad
     TextMetrics {
         id: metrics
         font: root.font
         text: root.text
     }
-    leftPadding: pad - metrics.tightBoundingRect.x
-    rightPadding: pad + metrics.tightBoundingRect.width
-                + metrics.tightBoundingRect.x - contentWidth
+    leftPadding: text === "" ? 0 : pad - metrics.tightBoundingRect.x
+    rightPadding: text === "" ? 0
+        : pad + metrics.tightBoundingRect.width
+          + metrics.tightBoundingRect.x - contentWidth
     Layout.preferredWidth: implicitWidth + extraWidth
 
     Rectangle {
