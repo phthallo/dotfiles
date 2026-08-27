@@ -30,6 +30,6 @@ BarText {
 
     ThemePopup {
         id: popup
-        anchor.item: root
+        anchorItem: root
     }
 }

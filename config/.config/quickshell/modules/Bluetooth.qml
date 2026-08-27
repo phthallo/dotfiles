@@ -29,6 +29,6 @@ BarText {
         // Anchored to the icon itself, not a computed offset - mapToItem
         // isn't a binding, so a fixed offset wouldn't track the module
         // resizing.
-        anchor.item: root
+        anchorItem: root
     }
 }
