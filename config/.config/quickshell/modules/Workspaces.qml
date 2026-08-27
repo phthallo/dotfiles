@@ -39,13 +39,19 @@ MouseArea {
         Repeater {
             // Ids rather than workspace objects, because the persistent
             // ones have no object until Hyprland creates them. Anything
-            // Hyprland does have beyond them is appended, so a sixth
-            // workspace still shows up while you are on it.
+            // Hyprland does have beyond them is appended and shows its own
+            // numeral, so a sixth workspace reads "6" and not a bullet you
+            // cannot tell from a seventh.
             //
             // Sorted, because Hyprland returns workspaces in creation order
             // and a bar built straight off it reads "3 1 2 4 5" once you
             // have jumped around. Negative ids are the special workspaces
             // (the scratchpad), which never had a cell here.
+            //
+            // Once the strip runs past the five that are always there, a
+            // bullet closes it off - id 0, which Hyprland never uses, so
+            // nothing focuses it and clicking it goes nowhere. It marks
+            // where the persistent run ends and the overflow begins.
             model: {
                 const ids = new Set();
                 for (let i = 1; i <= root.persistent; i++)
@@ -53,7 +59,10 @@ MouseArea {
                 for (const w of Hyprland.workspaces.values)
                     if (w.id > 0)
                         ids.add(w.id);
-                return [...ids].sort((a, b) => a - b);
+                const out = [...ids].sort((a, b) => a - b);
+                if (out.length > root.persistent)
+                    out.push(0);
+                return out;
             }
 
             BarText {
@@ -62,10 +71,7 @@ MouseArea {
                 readonly property bool active:
                     Hyprland.focusedWorkspace?.id === modelData
 
-                // format-icons mapped each workspace to its own numeral and
-                // everything else to a bullet, so the bar stays a fixed
-                // width however far past the end you go.
-                text: modelData <= root.persistent ? modelData : "•"
+                text: modelData > 0 ? modelData : "•"
 
                 // #workspaces button.active: a filled block behind dimmed
                 // text, not brighter text. Reading it the other way round is
@@ -83,7 +89,9 @@ MouseArea {
                 Layout.fillHeight: true
                 verticalAlignment: Text.AlignVCenter
 
-                onLeft: () => Hyprland.dispatch("workspace " + modelData)
+                onLeft: modelData > 0
+                    ? () => Hyprland.dispatch("workspace " + modelData)
+                    : null
             }
         }
     }
