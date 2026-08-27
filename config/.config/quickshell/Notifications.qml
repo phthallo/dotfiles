@@ -58,7 +58,7 @@ Singleton {
                 root.popups = root.popups.filter(n => n !== notif);
             });
 
-            if (!root.dnd)
+            if (!root.dnd && !root.panelOpen)
                 root.popups = [...root.popups, notif];
         }
     }

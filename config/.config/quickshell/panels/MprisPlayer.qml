@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Effects
+import Quickshell.Widgets
 import Quickshell.Services.Mpris
 import "root:/"
 
@@ -13,17 +14,14 @@ Item {
     readonly property var player: {
         const ps = Mpris.players.values;
         return ps.find(p => p.playbackState === MprisPlaybackState.Playing)
-            ?? ps[0] ?? null;
+            ?? ps.find(p => p.playbackState !== MprisPlaybackState.Stopped)
+            ?? null;
     }
     readonly property bool playing:
         player?.playbackState === MprisPlaybackState.Playing
 
-    // Gone, not greyed out, when nothing is playing - a paused player still
-    // counts, since the card is how you resume it.
-    visible: !!player
-        && player.playbackState !== MprisPlaybackState.Stopped
-        && !!player.trackTitle
-    implicitHeight: visible ? content.implicitHeight + 10 : 0
+    visible: true
+    implicitHeight: content.implicitHeight + 10
 
     // border-top: 1px solid rgba(255,255,255,0.10), padding: 10px 0 0 0
     Rectangle {
@@ -38,15 +36,19 @@ Item {
         anchors.topMargin: 10
         clip: true
 
-        Rectangle {
+        // ClippingRectangle actually clips children to the rounded shape -
+        // a plain Rectangle's radius only rounds its own fill, so the blur
+        // below kept poking square corners past it.
+        ClippingRectangle {
             anchors.fill: parent
             radius: Theme.panelRadius
             color: Theme.bg
 
-            // Decoded at 64px: it's going through a 34px blur at 40% opacity,
-            // so a full-res decode (36MB for a 3000px cover) buys nothing.
-            // Also matches the cover's sourceSize below, so Qt's image cache
-            // (keyed on source+size) shares one decode between them.
+            // Decoded at 64px: it's going through a 34px blur at 40%
+            // opacity, so a full-res decode (36MB for a 3000px cover)
+            // buys nothing. Also matches the cover's sourceSize below,
+            // so Qt's image cache (keyed on source+size) shares one
+            // decode between them.
             Image {
                 id: art
                 anchors.fill: parent
@@ -65,15 +67,14 @@ Item {
                 blur: 1.0
                 blurMax: 34
                 autoPaddingEnabled: false
-                opacity: 0.40
+                opacity: 0.30
                 visible: art.status === Image.Ready
             }
 
             // scrim over the blur so the text stays readable on bright covers
             Rectangle {
                 anchors.fill: parent
-                color: Qt.rgba(0, 0, 0, 0.55)
-                radius: Theme.panelRadius
+                color: Qt.rgba(0, 0, 0, 0.5)
             }
         }
 
@@ -111,7 +112,7 @@ Item {
 
                     Text {
                         Layout.fillWidth: true
-                        text: root.player?.trackTitle ?? ""
+                        text: root.player?.trackTitle || "Nothing playing"
                         color: "#ffffff"
                         font.family: Theme.fontFamily
                         font.pixelSize: Math.round(Theme.panelFontSize * 1.05)
@@ -133,7 +134,7 @@ Item {
             RowLayout {
                 Layout.fillWidth: true
                 Layout.topMargin: 16
-                Layout.bottomMargin: 14
+                Layout.bottomMargin: 24
                 spacing: 0
 
                 Item { Layout.fillWidth: true }
@@ -148,12 +149,17 @@ Item {
                     delegate: Rectangle {
                         required property var modelData
                         readonly property bool disc: modelData.act === "toggle"
+                        // Named to avoid shadowing Item's own `enabled` -
+                        // shadowing it here would silently drop Qt Quick's
+                        // native input-blocking for disabled items.
+                        readonly property bool hasPlayer: !!root.player
 
                         Layout.leftMargin: disc ? 14 : 18
                         Layout.rightMargin: disc ? 14 : 18
                         implicitWidth: disc ? 40 : 28
                         implicitHeight: disc ? 34 : 28
                         radius: Theme.pillRadius
+                        opacity: hasPlayer ? 1 : 0.35
                         color: disc
                             ? Qt.rgba(1, 1, 1, btn.containsMouse ? 0.26 : 0.14)
                             : Qt.rgba(1, 1, 1, btn.containsMouse ? 0.16 : 0)
@@ -172,8 +178,8 @@ Item {
                         MouseArea {
                             id: btn
                             anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
+                            hoverEnabled: parent.hasPlayer
+                            cursorShape: parent.hasPlayer ? Qt.PointingHandCursor : Qt.ArrowCursor
                             onClicked: {
                                 const p = root.player;
                                 if (!p) return;

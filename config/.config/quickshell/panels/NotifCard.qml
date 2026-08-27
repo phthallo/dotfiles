@@ -12,13 +12,24 @@ Rectangle {
     required property var notif
     // The panel wants the card to fill the gutter; a popup sizes the window.
     property int cardWidth: Theme.panelWidth - 2 * Theme.panelPad
+    // Toasts stand alone on the desktop and need an edge to read against;
+    // cards in the panel already sit inside its border, so a second one per
+    // card is just noise.
+    property bool bordered: true
 
     signal closed()
 
+    // HoverHandler, not a MouseArea: a MouseArea here would sit in the same
+    // stacking order as the default-click MouseArea below and never see the
+    // pointer, since that one fully covers the card too.
+    HoverHandler { id: hover }
+
     width: cardWidth
-    implicitHeight: body.implicitHeight + 8   // .notification padding: 4px 10px
+    implicitHeight: body.implicitHeight + 16
     color: Theme.card
     radius: Theme.panelRadius
+    border.width: bordered ? Theme.borderWidth : 0
+    border.color: Theme.borderActive
 
     // Clicking the card invokes the notification's default action, which is
     // what launches the app that sent it. Notifications without one just get
@@ -43,7 +54,7 @@ Rectangle {
         anchors.top: parent.top
         anchors.leftMargin: 10
         anchors.rightMargin: 10
-        anchors.topMargin: 4
+        anchors.topMargin: 8
         spacing: 2
 
         RowLayout {
@@ -158,18 +169,19 @@ Rectangle {
         height: 18
         radius: Theme.pillRadius
         color: Theme.accent
-        visible: hover.containsMouse || close.containsMouse
+        visible: hover.hovered || close.containsMouse
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.rightMargin: -6
-        anchors.topMargin: -2
+        anchors.rightMargin: 6
+        anchors.topMargin: 6
 
         Text {
             anchors.centerIn: parent
-            text: "×"
+            text: "X"
             color: Theme.bg
             font.family: Theme.fontFamily
-            font.pixelSize: Theme.panelFontSize
+            font.pixelSize: 11
+            font.weight: Font.Bold
         }
 
         MouseArea {
@@ -182,15 +194,5 @@ Rectangle {
                 root.closed();
             }
         }
-    }
-
-    MouseArea {
-        id: hover
-        anchors.fill: parent
-        hoverEnabled: true
-        acceptedButtons: Qt.NoButton
-        // Sits under the click handler above; only there to keep the close
-        // button visible while the pointer is anywhere on the card.
-        z: -1
     }
 }

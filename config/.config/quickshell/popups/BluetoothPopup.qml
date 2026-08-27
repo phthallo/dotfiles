@@ -37,7 +37,7 @@ PopupShell {
             width: 42
             height: 22
             radius: Theme.pillRadius
-            color: root.adapter?.enabled ? Theme.accent : Theme.raised
+            color: root.adapter?.enabled ? Theme.accent : Theme.overlay
 
             Rectangle {
                 width: 16

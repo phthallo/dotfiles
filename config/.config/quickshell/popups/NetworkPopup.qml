@@ -41,7 +41,7 @@ PopupShell {
             width: 42
             height: 22
             radius: Theme.pillRadius
-            color: Networking.wifiEnabled ? Theme.accent : Theme.raised
+            color: Networking.wifiEnabled ? Theme.accent : Theme.overlay
 
             Rectangle {
                 width: 16
@@ -57,6 +57,82 @@ PopupShell {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
                 onClicked: Networking.wifiEnabled = !Networking.wifiEnabled
+            }
+        }
+    }
+
+    // Password entry, shown only for a secured network we have no saved
+    // connection for. Sits right under the header so it's never scrolled
+    // out of view by a long network list.
+    property var askFor: null
+    onAskForChanged: if (askFor) { psk.text = ""; psk.forceActiveFocus(); }
+
+    function submitPsk() {
+        if (psk.text === "") return;
+        root.askFor.connectWithPsk(psk.text);
+        root.askFor = null;
+        psk.text = "";
+    }
+
+    Rectangle {
+        width: parent.width
+        visible: !!root.askFor
+        implicitHeight: 34
+        radius: Theme.panelRadius
+        color: Theme.raised
+        border.width: 2
+        border.color: psk.activeFocus ? Theme.accent : "transparent"
+
+        TextInput {
+            id: psk
+            anchors.left: parent.left
+            anchors.right: submit.left
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.leftMargin: 10
+            anchors.rightMargin: 6
+            verticalAlignment: TextInput.AlignVCenter
+            color: Theme.fg
+            font.family: Theme.fontFamily
+            font.pixelSize: Theme.panelFontSize
+            echoMode: TextInput.Password
+            onAccepted: root.submitPsk()
+            Keys.onEscapePressed: root.askFor = null
+
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                visible: psk.text === ""
+                text: "Password"
+                color: Theme.fgDim
+                opacity: 0.6
+                font: psk.font
+            }
+        }
+
+        Rectangle {
+            id: submit
+            anchors.right: parent.right
+            anchors.rightMargin: 4
+            anchors.verticalCenter: parent.verticalCenter
+            width: 26
+            height: 26
+            radius: Theme.pillRadius
+            color: submitMouse.containsMouse ? Theme.raisedHover : "transparent"
+
+            Text {
+                anchors.centerIn: parent
+                text: "→"
+                color: Theme.fg
+                font.family: Theme.fontFamily
+                font.pixelSize: Theme.panelFontSize
+            }
+
+            MouseArea {
+                id: submitMouse
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.submitPsk()
             }
         }
     }
@@ -97,17 +173,18 @@ PopupShell {
 
             // Same five-bar ramp waybar used, so the popup and the bar icon
             // never disagree about how strong the signal is.
+            // signalStrength is a 0.0-1.0 fraction, not a 0-100 percent.
             glyph: ["󰤯", "󰤟", "󰤢",
                     "󰤥", "󰤨"][
-                        Math.min(4, Math.floor(modelData.signalStrength / 25))]
+                        Math.min(4, Math.floor(modelData.signalStrength * 4))]
             label: modelData.name
             detail: modelData.connected ? "connected"
                   : modelData.stateChanging ? "..."
                   : modelData.known ? "saved" : ""
-            highlight: modelData.connected
+            highlight: modelData.connected || modelData === root.askFor
 
             onActivated: {
-                if (modelData.connected) modelData.disconnect();
+                if (modelData.connected || modelData.stateChanging) modelData.disconnect();
                 else if (modelData.known || modelData.security === WifiSecurityType.None)
                     modelData.connect();
                 else
@@ -115,49 +192,6 @@ PopupShell {
             }
             // Right click forgets a saved network, the way nmtui's delete does.
             onSecondary: if (modelData.known) modelData.forget()
-        }
-    }
-
-    // Password entry, shown only for a secured network we have no saved
-    // connection for.
-    property var askFor: null
-
-    Rectangle {
-        width: parent.width
-        visible: !!root.askFor
-        implicitHeight: 34
-        radius: Theme.panelRadius
-        color: Theme.raised
-        border.width: 2
-        border.color: psk.activeFocus ? Theme.accent : "transparent"
-
-        TextInput {
-            id: psk
-            anchors.fill: parent
-            anchors.leftMargin: 10
-            anchors.rightMargin: 10
-            verticalAlignment: TextInput.AlignVCenter
-            color: Theme.fg
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.panelFontSize
-            echoMode: TextInput.Password
-            focus: visible
-            onVisibleChanged: if (visible) { text = ""; forceActiveFocus(); }
-            onAccepted: {
-                root.askFor.connectWithPsk(text);
-                root.askFor = null;
-                text = "";
-            }
-            Keys.onEscapePressed: root.askFor = null
-
-            Text {
-                anchors.verticalCenter: parent.verticalCenter
-                visible: psk.text === ""
-                text: "Password, then Enter"
-                color: Theme.fgDim
-                opacity: 0.6
-                font: psk.font
-            }
         }
     }
 }
