@@ -47,50 +47,49 @@ PanelWindow {
         anchors.leftMargin: Theme.gap
         anchors.rightMargin: Theme.gap
 
+        // .modules-left { padding: 0 0 0 10px } - one background behind the
+        // utilities group, the workspace buttons and the media group.
         Island {
-            id: leftIsland
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
+            leftPad: 10
+            rightPad: 0
 
-            Launcher {}
-            IdleInhibitor { window: root }
-            Separator {}
-            ThemeSwitcher {}
-        }
+            Group {
+                Launcher {}
+                IdleInhibitor { window: root }
+                Separator {}
+                ThemeSwitcher {}
+            }
 
-        // Workspaces and the media widget sat outside the left island in
-        // waybar - bare modules between the groups - so they stay outside it.
-        RowLayout {
-            anchors.left: parent.left
-            anchors.leftMargin: leftIsland.width + Theme.gap
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: 5
+            // Bare buttons between the two groups, with no brackets of their
+            // own - the only part of the bar that is not inside a group.
+            Workspaces { Layout.leftMargin: 10 }
 
-            Workspaces {}
-            MprisWidget {}
+            MprisWidget { Layout.leftMargin: 5 }   // #mpris { margin: 0 0 0 5px }
         }
 
         Island {
-            id: centreIsland
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
             visible: title.text !== ""
 
-            WindowTitle { id: title }
+            Group {
+                WindowTitle { id: title }
+            }
         }
 
-        RowLayout {
+        Island {
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            spacing: 5
 
-            Island {
+            Group {
                 SysInfo { kind: "cpu" }
                 Separator {}
                 SysInfo { kind: "memory" }
             }
 
-            Island {
+            Group {
                 Clock {}
                 Separator {}
                 Network {}

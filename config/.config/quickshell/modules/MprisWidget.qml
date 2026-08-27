@@ -3,12 +3,11 @@ import Quickshell.Services.Mpris
 import "root:/"
 
 // waybar's mpris module: "[ ♪ {status} | {artist} ]", 40 chars of dynamic
-// text. It sat between the left island and the centre one as a bare module
-// with its own brackets in the format string, so it carries its own here
-// rather than being wrapped in an Island.
-Row {
+// text. The brackets were part of its format string, so it is a Group - it
+// shares the left island's background with the utilities group and the
+// workspace buttons rather than being a box of its own.
+Group {
     id: root
-    spacing: 0
     visible: !!player
 
     // The first player actually playing, falling back to the first that
@@ -26,8 +25,6 @@ Row {
     // #mpris.playing flipped the whole widget to a filled green pill.
     readonly property color chip: playing ? Theme.green : "transparent"
     readonly property color ink: playing ? Theme.bg : Theme.fg
-
-    Bracket { text: "[" }
 
     BarText {
         text: "♪"
@@ -62,6 +59,4 @@ Row {
         leftPadding: 6
         rightPadding: 9
     }
-
-    Bracket { text: "]" }
 }
