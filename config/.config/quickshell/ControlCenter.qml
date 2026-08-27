@@ -49,6 +49,23 @@ Scope {
         id: panel
         screen: root.modelData
         visible: Notifications.panelOpen
+        onVisibleChanged: if (visible) show.restart()
+
+        // Same fade-and-settle as every popup the bar drops down; see
+        // Theme.openDuration.
+        ParallelAnimation {
+            id: show
+            NumberAnimation {
+                target: card; property: "opacity"
+                from: 0; to: 1
+                duration: Theme.openDuration; easing.type: Easing.OutCubic
+            }
+            NumberAnimation {
+                target: slide; property: "y"
+                from: -Theme.openSlide; to: 0
+                duration: Theme.openDuration; easing.type: Easing.OutCubic
+            }
+        }
 
         anchors.top: true
         anchors.right: true
@@ -73,6 +90,7 @@ Scope {
             id: card
             anchors.top: parent.top
             width: parent.width
+            transform: Translate { id: slide }
             implicitHeight: Math.min(parent.height,
                                      body.implicitHeight + 2 * Theme.panelPad)
             color: Theme.bg

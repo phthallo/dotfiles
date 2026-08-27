@@ -49,7 +49,7 @@ BarText {
         : "󰖪"
     color: kind === "disconnected" ? Theme.fgDim : Theme.fg
 
-    onLeft: () => popup.visible = !popup.visible
+    onLeft: () => popup.open = !popup.open
 
     NetworkPopup {
         id: popup

@@ -81,36 +81,20 @@ Item {
                 Layout.fillWidth: true
                 spacing: 14
 
-                // Fixed 64px slot whether or not there is art. swaync drew its
-                // no-art fallback at whatever size the icon happened to be,
-                // which on a missing cover filled half the card with a music
-                // note; the glyph here is clamped to the same box as the art.
-                Rectangle {
+                // Only ever a real cover. swaync drew a music-note fallback
+                // whenever a player had no art, which filled a chunk of the
+                // card with a glyph; here the slot simply collapses and the
+                // text takes the full width.
+                Image {
+                    id: cover
                     Layout.preferredWidth: 64
                     Layout.preferredHeight: 64
-                    radius: 6
-                    color: Qt.rgba(1, 1, 1, 0.10)
-                    visible: !!root.player
-
-                    Text {
-                        anchors.centerIn: parent
-                        visible: cover.status !== Image.Ready
-                        text: "\uf001"
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 26
-                        color: Qt.rgba(1, 1, 1, 0.55)
-                    }
-
-                    Image {
-                        id: cover
-                        anchors.fill: parent
-                        source: root.player?.trackArtUrl ?? ""
-                        fillMode: Image.PreserveAspectCrop
-                        sourceSize.width: 64
-                        sourceSize.height: 64
-                        asynchronous: true
-                        visible: status === Image.Ready
-                    }
+                    source: root.player?.trackArtUrl ?? ""
+                    fillMode: Image.PreserveAspectCrop
+                    sourceSize.width: 64
+                    sourceSize.height: 64
+                    asynchronous: true
+                    visible: status === Image.Ready
                 }
 
                 ColumnLayout {

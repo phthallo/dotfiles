@@ -135,6 +135,14 @@ Singleton {
     readonly property int cardGap: 4           // between sibling cards
     readonly property int panelFontSize: 15
 
+    // One open animation for every dropped-down surface - the control center,
+    // the wifi/bluetooth lists, the theme picker. They fade in and settle down
+    // by openSlide px; closing is immediate, because the compositor tears a
+    // grabbing popup down the moment the click lands outside and there is no
+    // way to hold it open for an outro.
+    readonly property int openDuration: 140
+    readonly property int openSlide: 8
+
     // shade(@cc_bg, 1.08) and 1.10 in the swaync stylesheet: cards sit one
     // step above the panel, grid buttons one step above that.
     function shade(c, f) {

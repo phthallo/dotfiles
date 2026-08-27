@@ -89,7 +89,7 @@ PopupShell {
             highlight: active
 
             onActivated: {
-                root.visible = false;
+                root.open = false;
                 if (!active)
                     root.apply(fileName);
             }

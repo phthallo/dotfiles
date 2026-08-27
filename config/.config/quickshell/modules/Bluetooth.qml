@@ -28,7 +28,7 @@ BarText {
         : anyConnected ? "󰂱" : "󰂯"
     color: adapter?.enabled ? Theme.fg : Theme.fgDim
 
-    onLeft: () => popup.visible = !popup.visible
+    onLeft: () => popup.open = !popup.open
 
     BluetoothPopup {
         id: popup

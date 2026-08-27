@@ -15,6 +15,20 @@ PopupWindow {
     default property alias content: inner.data
     property int contentWidth: 320
 
+    // Callers flip `open`, never `visible`. The compositor closes a grabbing
+    // popup on its own when a click lands outside it, so a `visible: open`
+    // binding would go stale and the next click on the bar button would only
+    // toggle the flag back - the classic two-clicks-to-reopen bug. Syncing
+    // both directions instead keeps the button an honest toggle: clicking it
+    // again is itself an outside click, the grab eats it, the surface goes,
+    // and this sees that and clears the flag.
+    property bool open: false
+    onOpenChanged: if (visible !== open) visible = open
+    onVisibleChanged: {
+        if (open !== visible) open = visible;
+        if (visible) show.restart();
+    }
+
     implicitWidth: contentWidth
     implicitHeight: Math.min(600, inner.implicitHeight + 2 * Theme.panelPad)
     color: "transparent"
@@ -27,8 +41,24 @@ PopupWindow {
     anchor.gravity: Edges.Bottom
     anchor.adjustment: PopupAdjustment.SlideX
 
+    ParallelAnimation {
+        id: show
+        NumberAnimation {
+            target: card; property: "opacity"
+            from: 0; to: 1
+            duration: Theme.openDuration; easing.type: Easing.OutCubic
+        }
+        NumberAnimation {
+            target: slide; property: "y"
+            from: -Theme.openSlide; to: 0
+            duration: Theme.openDuration; easing.type: Easing.OutCubic
+        }
+    }
+
     Rectangle {
+        id: card
         anchors.fill: parent
+        transform: Translate { id: slide }
         color: Theme.bg
         radius: Theme.panelRadius
         border.width: Theme.borderWidth

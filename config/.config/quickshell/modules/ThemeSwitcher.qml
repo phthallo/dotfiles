@@ -19,7 +19,7 @@ BarText {
     property string script: Quickshell.env("HOME") + "/.config/waybar/scripts/theme-switcher.sh"
     property string cycler: Quickshell.env("HOME") + "/.config/waybar/scripts/wallpaper-cycler.sh"
 
-    onLeft: () => popup.visible = !popup.visible
+    onLeft: () => popup.open = !popup.open
     onRight: () => run([root.script, "random"])
     onMiddle: () => run([root.cycler, "next"])
 

@@ -372,12 +372,10 @@
    text, a centred row of transport buttons. Nothing else. */
 
 :root {
-  /* GtkImage renders a cover and the no-art fallback icon at the same icon
-     size, and GTK adds no class to tell the two apart - so this is one knob
-     for both, and 64 was small for a picture but enormous for a music note.
-     44 is the compromise. The quickshell player does not have the problem:
-     the art keeps a 64px box and the glyph is drawn at 26 inside it. */
-  --mpris-album-art-icon-size: 44px;
+  /* Only ever a real cover: the widget is configured show-album-art
+     "when-available", so the audio-x-generic-symbolic fallback - which this
+     size made enormous - never renders. */
+  --mpris-album-art-icon-size: 64px;
 }
 
 .widget-mpris {
