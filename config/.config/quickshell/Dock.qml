@@ -12,6 +12,10 @@ import "root:/"
 // style.css, which is hand-written gruvbox rather than themed - the values
 // are mapped onto theme tokens here so the dock follows a theme switch,
 // which the original never did.
+//
+// One deliberate departure: nwg-dock drew a button per window, so five
+// terminals meant five identical icons. Here windows are grouped by app and
+// the count is drawn as dots under the icon instead.
 PanelWindow {
     id: root
 
@@ -31,6 +35,28 @@ PanelWindow {
     // compositor-specific code in it at all.
     readonly property var windows: [...ToplevelManager.toplevels.values]
 
+    // Grouped by app, in the order each app first appeared, so a button does
+    // not jump along the row when a window somewhere else in it closes.
+    // Both halves come out of one pass: the delegates need the map to find
+    // their own windows, the Repeater needs the keys in order.
+    //
+    // A window with no appId gets a key of its own rather than joining a
+    // shared "" group - unrelated nameless windows are not the same app.
+    readonly property var grouped: {
+        const map = ({});
+        const keys = [];
+        const ws = windows;
+        for (let i = 0; i < ws.length; i++) {
+            const key = ws[i].appId || ("window:" + i);
+            if (!map[key]) {
+                map[key] = [];
+                keys.push(key);
+            }
+            map[key].push(ws[i]);
+        }
+        return { map, keys };
+    }
+
     // Nothing to reserve when nothing is running - an empty dock would
     // otherwise hold a strip of screen for a box with no buttons in it.
     // ScriptModel has no count property, so this asks the array itself.
@@ -41,12 +67,15 @@ PanelWindow {
     WlrLayershell.namespace: "quickshell:dock"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
-    // ScriptModel rather than the bare array: it diffs by identity, so a
-    // window opening somewhere else does not rebuild every button and reload
-    // every icon.
+    // ScriptModel rather than the bare array: it diffs, so a window opening
+    // somewhere else does not rebuild every button and reload every icon.
+    // The model carries the keys, not the group objects - a group's contents
+    // change every time one of its windows opens or closes, and a delegate
+    // that re-reads the map by key stays put through that instead of being
+    // torn down and rebuilt.
     ScriptModel {
         id: toplevels
-        values: root.windows
+        values: root.grouped.keys
     }
 
     Rectangle {
@@ -72,20 +101,27 @@ PanelWindow {
 
                 delegate: Rectangle {
                     id: button
-                    required property var modelData
+                    required property string modelData
 
-                    readonly property string appClass: modelData.appId ?? ""
-                    readonly property bool active: modelData.activated
+                    // Re-read out of the map by key rather than held: the
+                    // delegate survives its group gaining and losing windows.
+                    readonly property var group:
+                        root.grouped.map[modelData] ?? []
+                    readonly property string appClass: group[0]?.appId ?? ""
+                    readonly property bool active:
+                        group.some(w => w.activated)
 
                     implicitWidth: 56                // 48px icon + 4px padding
-                    implicitHeight: 56
+                    implicitHeight: 64               // + the dot row below it
                     radius: 2
                     color: mouse.containsMouse
                         ? Qt.rgba(1, 1, 1, 0.15) : "transparent"
 
                     Image {
                         id: icon
-                        anchors.centerIn: parent
+                        anchors.top: parent.top
+                        anchors.topMargin: 4
+                        anchors.horizontalCenter: parent.horizontalCenter
                         width: 48
                         height: 48
                         sourceSize.width: 48
@@ -107,14 +143,35 @@ PanelWindow {
                         }
                     }
 
-                    // #active: solid 1px underline in the theme's blue.
-                    Rectangle {
+                    // One dot per window, which is the whole point of the
+                    // grouping - the row says how many are open without
+                    // repeating the icon. This replaces nwg-dock's #active
+                    // underline rather than sitting beside it: both want the
+                    // same strip of pixels, and colour carries the active
+                    // state just as well (blue for the group holding the
+                    // focused window, muted for the rest).
+                    //
+                    // Capped at four. Past that the dots stop being countable
+                    // at a glance and just become a smear.
+                    Row {
                         anchors.bottom: parent.bottom
+                        anchors.bottomMargin: 5
                         anchors.horizontalCenter: parent.horizontalCenter
-                        width: parent.width - 8
-                        height: 1
-                        color: Theme.blue
-                        visible: button.active
+                        spacing: 3
+
+                        Repeater {
+                            model: Math.min(button.group.length, 4)
+
+                            delegate: Rectangle {
+                                width: 4
+                                height: 4
+                                radius: 2
+                                color: button.active
+                                    ? Theme.blue
+                                    : Qt.rgba(Theme.fg.r, Theme.fg.g,
+                                              Theme.fg.b, 0.45)
+                            }
+                        }
                     }
 
                     MouseArea {
@@ -123,11 +180,23 @@ PanelWindow {
                         hoverEnabled: true
                         acceptedButtons: Qt.LeftButton | Qt.MiddleButton
                         cursorShape: Qt.PointingHandCursor
+                        // Left click raises the group's window; clicking a
+                        // group that already holds focus steps to its next
+                        // window, so a stack of terminals is walked with
+                        // repeated clicks instead of being stuck on one.
+                        // Middle click closes only the focused member, never
+                        // the whole group - one misclick should not take five
+                        // windows with it.
                         onClicked: event => {
+                            const g = button.group;
+                            if (g.length === 0)
+                                return;
+
+                            const at = g.findIndex(w => w.activated);
                             if (event.button === Qt.MiddleButton)
-                                button.modelData.close();
+                                g[Math.max(at, 0)].close();
                             else
-                                button.modelData.activate();
+                                g[(at + 1) % g.length].activate();
                         }
                     }
                 }
