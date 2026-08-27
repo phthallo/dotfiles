@@ -113,9 +113,21 @@ PanelWindow {
 
                     implicitWidth: 56                // 48px icon + 4px padding
                     implicitHeight: 64               // + the dot row below it
-                    radius: 2
-                    color: mouse.containsMouse
-                        ? Qt.rgba(1, 1, 1, 0.15) : "transparent"
+                    // Rounded a little more than nwg-dock's near-square 2px:
+                    // that was fine for a faint hover wash, but the focused
+                    // button is a solid block of colour and reads as a patch
+                    // rather than a button at that radius.
+                    radius: 6
+                    // The focused app's button is lit in the theme's blue,
+                    // hover in plain white: two different questions ("which
+                    // window am I in" vs "what is under the pointer"), so
+                    // they get two different colours rather than two
+                    // strengths of the same one, which would read as the
+                    // hovered button being the focused one.
+                    color: button.active
+                        ? Qt.rgba(Theme.blue.r, Theme.blue.g, Theme.blue.b,
+                                  mouse.containsMouse ? 0.70 : 0.55)
+                        : Qt.rgba(1, 1, 1, mouse.containsMouse ? 0.15 : 0)
 
                     Image {
                         id: icon
