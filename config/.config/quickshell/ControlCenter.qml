@@ -82,9 +82,13 @@ Scope {
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
 
         // swaync reserved its width and shoved every tiled window aside on
-        // open. It floats over them instead: opening the panel should not
-        // reflow the desktop under it.
-        exclusionMode: ExclusionMode.Ignore
+        // open; this floats over them instead. Normal with a zero zone is
+        // the way to say that: it reserves nothing, but still respects the
+        // zones other surfaces reserve. Ignore reserves nothing AND ignores
+        // everyone else, which slid the panel up under the bar - the top row
+        // of buttons ended up behind it, unclickable.
+        exclusionMode: ExclusionMode.Normal
+        exclusiveZone: 0
 
         // The panel is as tall as its content, top-aligned, and the rest of
         // the surface is click-through so the backdrop below can take it.
