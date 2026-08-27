@@ -81,15 +81,36 @@ Item {
                 Layout.fillWidth: true
                 spacing: 14
 
-                Image {
+                // Fixed 64px slot whether or not there is art. swaync drew its
+                // no-art fallback at whatever size the icon happened to be,
+                // which on a missing cover filled half the card with a music
+                // note; the glyph here is clamped to the same box as the art.
+                Rectangle {
                     Layout.preferredWidth: 64
                     Layout.preferredHeight: 64
-                    source: root.player?.trackArtUrl ?? ""
-                    fillMode: Image.PreserveAspectCrop
-                    asynchronous: true
-                    visible: status === Image.Ready
-                    layer.enabled: true
-                    layer.effect: MultiEffect { maskEnabled: false }
+                    radius: 6
+                    color: Qt.rgba(1, 1, 1, 0.10)
+                    visible: !!root.player
+
+                    Text {
+                        anchors.centerIn: parent
+                        visible: cover.status !== Image.Ready
+                        text: "\uf001"
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 26
+                        color: Qt.rgba(1, 1, 1, 0.55)
+                    }
+
+                    Image {
+                        id: cover
+                        anchors.fill: parent
+                        source: root.player?.trackArtUrl ?? ""
+                        fillMode: Image.PreserveAspectCrop
+                        sourceSize.width: 64
+                        sourceSize.height: 64
+                        asynchronous: true
+                        visible: status === Image.Ready
+                    }
                 }
 
                 ColumnLayout {
