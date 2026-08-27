@@ -13,6 +13,12 @@ import "root:/"
 MouseArea {
     id: root
 
+    // Always drawn, whether or not Hyprland has created them yet. waybar
+    // listed only the workspaces that existed, so the bar grew a cell the
+    // first time you visited a new one and lost it again when you left,
+    // shoving everything to its right along each time.
+    readonly property int persistent: 5
+
     implicitWidth: layout.implicitWidth
     // The button strip is as tall as the island's interior, so the active
     // cell reads as a filled column rather than a chip floating in the middle.
@@ -31,20 +37,35 @@ MouseArea {
         spacing: 0   // waybar spaced these with 8px of button padding, below
 
         Repeater {
-            // Hyprland returns workspaces in creation order, not numeric
-            // order, so a bar built straight off it reads "3 1 2 4 5"
-            // after you have jumped around.
-            model: [...Hyprland.workspaces.values].sort((a, b) => a.id - b.id)
+            // Ids rather than workspace objects, because the persistent
+            // ones have no object until Hyprland creates them. Anything
+            // Hyprland does have beyond them is appended, so a sixth
+            // workspace still shows up while you are on it.
+            //
+            // Sorted, because Hyprland returns workspaces in creation order
+            // and a bar built straight off it reads "3 1 2 4 5" once you
+            // have jumped around. Negative ids are the special workspaces
+            // (the scratchpad), which never had a cell here.
+            model: {
+                const ids = new Set();
+                for (let i = 1; i <= root.persistent; i++)
+                    ids.add(i);
+                for (const w of Hyprland.workspaces.values)
+                    if (w.id > 0)
+                        ids.add(w.id);
+                return [...ids].sort((a, b) => a - b);
+            }
 
             BarText {
-                required property var modelData
+                required property int modelData
 
                 readonly property bool active:
-                    Hyprland.focusedWorkspace?.id === modelData.id
+                    Hyprland.focusedWorkspace?.id === modelData
 
-                // format-icons mapped 1-6 to themselves and everything else to
-                // a bullet, so the bar stays a fixed width past six.
-                text: modelData.id >= 1 && modelData.id <= 6 ? modelData.id : "•"
+                // format-icons mapped each workspace to its own numeral and
+                // everything else to a bullet, so the bar stays a fixed
+                // width however far past the end you go.
+                text: modelData <= root.persistent ? modelData : "•"
 
                 // #workspaces button.active: a filled block behind dimmed
                 // text, not brighter text. Reading it the other way round is
@@ -62,7 +83,7 @@ MouseArea {
                 Layout.fillHeight: true
                 verticalAlignment: Text.AlignVCenter
 
-                onLeft: () => Hyprland.dispatch("workspace " + modelData.id)
+                onLeft: () => Hyprland.dispatch("workspace " + modelData)
             }
         }
     }
