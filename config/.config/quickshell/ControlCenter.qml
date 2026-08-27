@@ -67,17 +67,27 @@ Scope {
             }
         }
 
+        // Anchored to two edges only, and exactly as tall as its content:
+        // the window IS the card. It used to span to the bottom of the
+        // screen with a mask cutting the input region down to the card,
+        // which left every click falling through to the backdrop below -
+        // the whole panel read as dead. Nothing to mask now.
         anchors.top: true
         anchors.right: true
-        anchors.bottom: true
         margins.top: Theme.gap
         margins.right: Theme.gap
-        margins.bottom: Theme.gap
 
         implicitWidth: Theme.panelWidth
+        implicitHeight: Math.min(screen.height - 2 * Theme.gap,
+                                 body.implicitHeight + 2 * Theme.panelPad)
         color: "transparent"
 
-        WlrLayershell.layer: WlrLayer.Top
+        // Overlay, one level above the backdrop below it. Both were on Top,
+        // where stacking follows map order - and the backdrop mapped last,
+        // so it sat over the panel and swallowed every click: the grid, the
+        // sliders and the notification buttons all looked dead while the
+        // click was really landing on "close".
+        WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.namespace: "quickshell:controlcenter"
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
 
@@ -90,17 +100,10 @@ Scope {
         exclusionMode: ExclusionMode.Normal
         exclusiveZone: 0
 
-        // The panel is as tall as its content, top-aligned, and the rest of
-        // the surface is click-through so the backdrop below can take it.
-        mask: Region { item: card }
-
         Rectangle {
             id: card
-            anchors.top: parent.top
-            width: parent.width
+            anchors.fill: parent
             transform: Translate { id: slide }
-            implicitHeight: Math.min(parent.height,
-                                     body.implicitHeight + 2 * Theme.panelPad)
             color: Theme.bg
             radius: Theme.panelRadius
             border.width: Theme.borderWidth

@@ -3,8 +3,8 @@ import Quickshell
 import "root:/"
 
 // Shared chrome for the small panels the bar drops down: same surface, border
-// and radius as the control center, so a wifi list and the notification panel
-// read as the same window at different sizes.
+// and radius as the control center, so a wifi list and the theme picker read
+// as the same window at different sizes.
 //
 // grabFocus makes this an xdg popup with a pointer grab, so a click anywhere
 // outside dismisses it. That is the thing wofi could never do as a layer
@@ -15,17 +15,10 @@ PopupWindow {
     default property alias content: inner.data
     property int contentWidth: 320
 
-    // The window is bigger than the card it draws: transparent padding on
-    // every side, with the card centred in it. SlideX only guarantees the
-    // *window* stays on screen, so a popup hung off a bar item near the edge
-    // used to end up with its border flush against the screen - and the
-    // theme switcher lives in the left island, so it always did. Padding the
-    // window means the card lands Theme.gap from the edge, the same offset
-    // every tiled window and the bar itself use. The mask keeps the padding
-    // from eating clicks: input outside the card passes through, so a click
-    // beside it still dismisses through the grab.
-    readonly property int pad: Theme.gap
-    readonly property int dropGap: Math.round(Theme.gap / 2)
+    // Theme.gap below the bar, matching gaps_out, so a popup lines up with
+    // the top edge of the tiled windows beside it and with the control
+    // center.
+    readonly property int dropGap: Theme.gap
 
     // Callers flip `open`, never `visible`. The compositor closes a grabbing
     // popup on its own when a click lands outside it, so a `visible: open`
@@ -35,25 +28,51 @@ PopupWindow {
     // again is itself an outside click, the grab eats it, the surface goes,
     // and this sees that and clears the flag.
     property bool open: false
-    onOpenChanged: if (visible !== open) visible = open
+    onOpenChanged: {
+        if (open) place();
+        if (visible !== open) visible = open;
+    }
     onVisibleChanged: {
         if (open !== visible) open = visible;
         if (visible) show.restart();
     }
 
-    implicitWidth: contentWidth + 2 * pad
-    implicitHeight: dropGap + pad
-        + Math.min(600, inner.implicitHeight + 2 * Theme.panelPad)
-    mask: Region { item: card }
+    implicitWidth: contentWidth
+    implicitHeight: Math.min(600, inner.implicitHeight + 2 * Theme.panelPad)
     color: "transparent"
     grabFocus: true
 
-    // Anchor at the bottom edge of whatever item opened it and grow down
-    // from there; SlideX keeps a popup opened near the screen edge on screen
-    // instead of letting it hang off the side.
     anchor.edges: Edges.Bottom
     anchor.gravity: Edges.Bottom
     anchor.adjustment: PopupAdjustment.SlideX
+
+    // Placed by hand rather than left to the anchor, because centring a popup
+    // under a bar item near the edge puts its border flush against the screen
+    // - and the theme switcher lives in the left island, so it always was.
+    // SlideX only promises the window lands *on* screen, not gaps_out from
+    // it. Masking a wider window down to a padded card was the other way to
+    // do this, and it cost the control center every click it should have
+    // taken, so the window stays exactly the size of what it draws.
+    //
+    // Run once per open: bar items only move when the bar relayouts, which
+    // cannot happen while a grabbing popup holds the pointer.
+    function place(): void {
+        const item = anchor.item;
+        const win = item?.QsWindow?.window ?? null;
+        if (!item || !win)
+            return;
+
+        const pos = item.mapToItem(null, 0, 0);
+        const half = root.implicitWidth / 2;
+        const centre = Math.max(Theme.gap + half,
+                                Math.min(pos.x + item.width / 2,
+                                         win.width - Theme.gap - half));
+
+        anchor.rect.x = centre - pos.x;
+        anchor.rect.y = item.height + root.dropGap;
+        anchor.rect.width = 0;
+        anchor.rect.height = 0;
+    }
 
     ParallelAnimation {
         id: show
@@ -71,11 +90,7 @@ PopupWindow {
 
     Rectangle {
         id: card
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: parent.top
-        anchors.topMargin: root.dropGap
-        width: root.contentWidth
-        height: parent.height - root.dropGap - root.pad
+        anchors.fill: parent
         transform: Translate { id: slide }
         color: Theme.bg
         radius: Theme.panelRadius

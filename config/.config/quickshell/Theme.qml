@@ -128,10 +128,10 @@ Singleton {
     // numbers swaync and wofi are told to repeat literally, because GTK3 has
     // no way to share a length. QML can, so panels take them from here.
     readonly property int panelWidth: 420      // control-center-width
-    // swaync rounded its panel and cards at 12 while waybar's islands sat at
-    // 7, which was fine when they were separate programs and jarring now that
-    // the panel drops out of the bar. One corner radius for the whole shell.
-    readonly property int panelRadius: radius  // panels and cards
+    // Panels and cards round like a hyprland window (decoration:rounding),
+    // not like the bar islands: they float over the desktop at gaps_out from
+    // the edge, so they are read against the windows beside them.
+    readonly property int panelRadius: 10
     readonly property int pillRadius: 999      // troughs, handles, close buttons
     readonly property int panelPad: 16         // panel gutter
     readonly property int blockGap: 14         // between widget blocks
