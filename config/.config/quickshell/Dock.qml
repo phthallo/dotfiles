@@ -122,10 +122,7 @@ PanelWindow {
                     // Focus in blue, hover in white - two different questions
                     // ("which window am I in" vs "what's under the pointer"),
                     // so two colours rather than two strengths of one.
-                    color: button.active
-                        ? Qt.rgba(Theme.blue.r, Theme.blue.g, Theme.blue.b,
-                                  mouse.containsMouse ? 0.70 : 0.55)
-                        : Qt.rgba(1, 1, 1, mouse.containsMouse ? 0.15 : 0)
+                    color: Qt.rgba(1, 1, 1, mouse.containsMouse ? 0.15 : 0)
 
                     Image {
                         id: icon
@@ -169,9 +166,10 @@ PanelWindow {
                             model: Math.min(button.group.length, 3)
 
                             delegate: Rectangle {
-                                width: 4
-                                height: 4
-                                radius: 2
+                                width: button.active ? 6 : 4
+                                height: button.active ? 6 : 4
+                                radius: width / 2
+                                anchors.verticalCenter: parent.verticalCenter
                                 color: button.active
                                     ? Theme.blue
                                     : Qt.rgba(Theme.fg.r, Theme.fg.g,
