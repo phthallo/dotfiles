@@ -372,6 +372,9 @@
    text, a centred row of transport buttons. Nothing else. */
 
 :root {
+  /* Only ever a real cover: the widget is configured show-album-art
+     "when-available", so the audio-x-generic-symbolic fallback - which this
+     size made enormous - never renders. */
   --mpris-album-art-icon-size: 64px;
 }
 

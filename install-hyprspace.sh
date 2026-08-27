@@ -129,14 +129,16 @@ if [ "$STRUT" != "0" ]; then
     echo "  Set it to 0 in hyprland.conf unless you have applied a patch for it."
 fi
 
-DOCK="$(pgrep -af 'nwg-dock-hyprland' | head -1 | cut -d' ' -f2-)"
-if [ -n "$DOCK" ]; then
+# Quickshell runs bar, dock, control center and notifications as one process,
+# so there is no standalone dock to restart - the whole thing has to be recycled.
+QS="$(pgrep -af 'qs -p .*quickshell' | head -1 | cut -d' ' -f2-)"
+if [ -n "$QS" ]; then
     BOTTOM="$(hyprctl monitors -j | jq -r '.[0].reserved[3]')"
     if [ "$BOTTOM" = "0" ]; then
-        echo "Restoring nwg-dock reserved area"
-        pkill -x nwg-dock-hyprland || true
+        echo "Restoring Quickshell's dock reserved area"
+        pkill -f 'qs -p .*quickshell' || true
         sleep 0.5
-        hyprctl dispatch exec "$DOCK" >/dev/null
+        hyprctl dispatch exec "$QS" >/dev/null
     fi
 fi
 

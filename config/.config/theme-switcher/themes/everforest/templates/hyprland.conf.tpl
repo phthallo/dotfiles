@@ -11,8 +11,8 @@ general {
 }
 
 # Layer rules
-layerrule = blur on, match:namespace waybar
-layerrule = ignore_alpha 0.2, match:namespace waybar
+layerrule = blur on, match:namespace quickshell:bar
+layerrule = ignore_alpha 0.2, match:namespace quickshell:bar
 
 layerrule = blur on, match:namespace wofi
 layerrule = ignore_alpha 0.2, match:namespace wofi

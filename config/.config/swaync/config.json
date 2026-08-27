@@ -106,6 +106,9 @@
     },
     "notifications": {
       "vexpand": false
+    },
+    "mpris": {
+      "show-album-art": "when-available"
     }
   }
 }
