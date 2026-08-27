@@ -103,6 +103,24 @@ Singleton {
     // The islands sit inside barHeight, below the top gap - waybar's
     // height:50 was the whole strip, not the height of a group.
     readonly property int islandHeight: barHeight - gap
-    readonly property string fontFamily: "0xProto Nerd Font"
+    // Loading the .ttf by path rather than trusting the family name: Qt
+    // resolves "0xProto Nerd Font" to the Propo cut, whose icon glyphs carry a
+    // 1.0-1.15em advance, so every Nerd Font icon on the bar sat ~6px wider
+    // than waybar's. Pango picks the base cut (0.62em advance for every glyph,
+    // icons drawn full size and allowed to overflow their cell). The Mono cut
+    // has the right advance but shrinks the icon ink to half size.
+    property FontLoader nerdFont: FontLoader {
+        source: "file:///usr/share/fonts/0xProto/0xProtoNerdFont-Regular.ttf"
+    }
+    readonly property string fontFamily: nerdFont.status === FontLoader.Ready
+        ? nerdFont.name : "0xProto Nerd Font"
     readonly property int fontSize: 15
+    // 0xProto advances every glyph 0.62em: 9.3px at this size, which Pango
+    // floors to 9 and Qt rounds to 10. Without this the bar drifts a pixel
+    // wider per character than waybar's.
+    readonly property real letterSpacing: -1
+    // One monospace cell at fontSize. Nerd Font icons carry a double-width
+    // advance that Pango collapses to a single cell while still drawing the
+    // full-size glyph; clamping an icon label to this reproduces that.
+    readonly property int cellWidth: 9
 }

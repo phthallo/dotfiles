@@ -28,6 +28,7 @@ BarText {
         anchors.bottom: parent.verticalCenter
         color: Theme.accent
         font.family: Theme.fontFamily
+    font.letterSpacing: Theme.letterSpacing
         font.pixelSize: Math.round(Theme.fontSize * 0.6)
     }
 }

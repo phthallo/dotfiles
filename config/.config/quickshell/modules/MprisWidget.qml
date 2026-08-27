@@ -2,11 +2,12 @@ import QtQuick
 import Quickshell.Services.Mpris
 import "root:/"
 
-// waybar's mpris module: "[ ♪ {status} | {artist} ]", 40 chars of dynamic
-// text. The brackets were part of its format string, so it is a Group - it
-// shares the left island's background with the utilities group and the
-// workspace buttons rather than being a box of its own.
-Group {
+// waybar's mpris module is a SINGLE label whose format string is
+// "[ \uf001  {status_icon} | {dynamic} ]" - the brackets, the music note and
+// the spacing between them are literal characters in one monospace run, not
+// separate widgets. Building it out of several BarTexts put Qt's own spacing
+// between them and read wider than waybar's.
+BarText {
     id: root
     visible: !!player
 
@@ -22,38 +23,25 @@ Group {
     readonly property bool playing:
         player?.playbackState === MprisPlaybackState.Playing
 
-    // #mpris.playing flipped the whole widget to a filled green pill -
-    // brackets included, since they came from its own format string.
+    readonly property string statusIcon: !player ? ""
+        : playing ? "▶"
+        : player.playbackState === MprisPlaybackState.Paused ? "⏸"
+        : "\uf04d"
+
+    // dynamic-len: 40, dynamic-order: ["artist"]
+    readonly property string dynamic: {
+        const a = player?.trackArtist ?? "";
+        return a.length > 40 ? a.slice(0, 40) : a;
+    }
+
+    text: "[ \uf001  " + statusIcon + " | " + dynamic + " ]"
+
+    // #mpris.playing flips the whole label to a filled green pill.
+    color: playing ? Theme.bg : Theme.fg
     chipColor: playing ? Theme.green : "transparent"
-    ink: playing ? Theme.bg : Theme.fg
+    chipRadius: 2
+    leftPadding: 9
+    rightPadding: 9
 
-    BarText {
-        text: "♪"
-        color: root.ink
-        leftPadding: 9
-    }
-
-    BarText {
-        text: !root.player ? ""
-            : root.playing ? "▶"
-            : root.player.playbackState === MprisPlaybackState.Paused ? "⏸"
-            : "■"
-        color: root.ink
-        leftPadding: 6
-        rightPadding: 6
-        onLeft: () => root.player?.togglePlaying()
-    }
-
-    BarText {
-        text: "|"
-        color: root.playing ? Theme.bg : Theme.fgDim
-    }
-
-    BarText {
-        readonly property string artist: root.player?.trackArtist ?? ""
-        text: artist.length > 40 ? artist.slice(0, 40) + "…" : artist
-        color: root.playing ? Theme.bg : Theme.fgDim
-        leftPadding: 6
-        rightPadding: 9
-    }
+    onLeft: () => root.player?.togglePlaying()
 }

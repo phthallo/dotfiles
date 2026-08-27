@@ -20,16 +20,21 @@ Rectangle {
     color: Theme.bg
     radius: Theme.radius
     border.width: Theme.borderWidth
-    border.color: Theme.borderActive
+    // waybar's @focused is rgba(184,187,38,0.8) - the theme green at 80%
+    // alpha over the wallpaper, not border_active. Reading the palette key
+    // instead gave a visibly different hue.
+    border.color: Qt.rgba(Theme.green.r, Theme.green.g, Theme.green.b, 0.8)
 
-    implicitWidth: inner.implicitWidth + leftPad + rightPad
+    // CSS padding sits inside the border, so the border's own 2px counts on
+    // both sides; without it every label sat 2px left of waybar's.
+    implicitWidth: inner.implicitWidth + leftPad + rightPad + 2 * border.width
     implicitHeight: Theme.islandHeight
 
     RowLayout {
         id: inner
         anchors.verticalCenter: parent.verticalCenter
         anchors.left: parent.left
-        anchors.leftMargin: root.leftPad
+        anchors.leftMargin: root.leftPad + root.border.width
         // Modules carry their own padding, the way waybar's per-module
         // `padding: 0 10px` rules did; a gap here would double-count.
         spacing: 0

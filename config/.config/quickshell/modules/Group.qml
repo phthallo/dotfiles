@@ -25,7 +25,9 @@ Item {
     property color ink: Theme.fg
 
     implicitWidth: row.implicitWidth
-    implicitHeight: row.implicitHeight
+    // A fixed interior height for the whole group, so the brackets and every
+    // label in between are centred against the same box.
+    implicitHeight: Theme.islandHeight - 2 * Theme.borderWidth
 
     Rectangle {
         anchors.fill: parent
@@ -36,22 +38,25 @@ Item {
 
     Row {
         id: row
+        height: root.height
         spacing: 0
 
         Bracket {
             text: "["
             color: root.ink
+            height: row.height
         }
 
         RowLayout {
             id: inner
             spacing: 0
-            anchors.verticalCenter: parent.verticalCenter
+            height: row.height
         }
 
         Bracket {
             text: "]"
             color: root.ink
+            height: row.height
         }
     }
 }

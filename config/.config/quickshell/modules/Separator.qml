@@ -6,5 +6,6 @@ Text {
     text: "|"
     color: Theme.fgDim
     font.family: Theme.fontFamily
+    font.letterSpacing: Theme.letterSpacing
     font.pixelSize: Theme.fontSize
 }

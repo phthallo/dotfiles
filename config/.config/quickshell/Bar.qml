@@ -64,9 +64,9 @@ PanelWindow {
 
             // Bare buttons between the two groups, with no brackets of their
             // own - the only part of the bar that is not inside a group.
-            Workspaces { Layout.leftMargin: 10 }
+            Workspaces { Layout.leftMargin: 5 }    // bar-wide "spacing": 5
 
-            MprisWidget { Layout.leftMargin: 5 }   // #mpris { margin: 0 0 0 5px }
+            MprisWidget { Layout.leftMargin: 10 }  // spacing 5 + margin-left 5
         }
 
         Island {
@@ -90,6 +90,7 @@ PanelWindow {
             }
 
             Group {
+                Layout.leftMargin: 5   // bar-wide "spacing": 5
                 Clock {}
                 Separator {}
                 Network {}
