@@ -5,22 +5,53 @@ import "root:/"
 // One of waybar's group/* widgets: a run of modules wrapped in the literal
 // "[" and "]" that custom/openbracket and custom/closebracket rendered.
 //
-// Several of these can share one Island, which is exactly what the left and
-// right containers did.
-Row {
+// Several of these can share one Island, which is what the left and right
+// containers do.
+//
+// chipColor fills the WHOLE group, brackets included. #mpris.playing set a
+// background-color on the mpris module, and its brackets came from that
+// module's own format string - so the green pill swallows the brackets too
+// rather than sitting behind individual labels.
+//
+// The chip is a sibling of the Row rather than a child of it: Qt refuses
+// left/right/fill/centerIn anchors on anything inside a positioner, and
+// "Row will not function" is a warning, not an error - the group silently
+// collapsed to zero width and spilled out past the island border.
+Item {
     id: root
 
     default property alias content: inner.data
+    property color chipColor: "transparent"
+    property color ink: Theme.fg
 
-    spacing: 0
+    implicitWidth: row.implicitWidth
+    implicitHeight: row.implicitHeight
 
-    Bracket { text: "[" }
-
-    RowLayout {
-        id: inner
-        spacing: 0
-        anchors.verticalCenter: parent.verticalCenter
+    Rectangle {
+        anchors.fill: parent
+        color: root.chipColor
+        radius: 2                       // #mpris.playing { border-radius: 2px }
+        visible: root.chipColor.a > 0
     }
 
-    Bracket { text: "]" }
+    Row {
+        id: row
+        spacing: 0
+
+        Bracket {
+            text: "["
+            color: root.ink
+        }
+
+        RowLayout {
+            id: inner
+            spacing: 0
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
+        Bracket {
+            text: "]"
+            color: root.ink
+        }
+    }
 }

@@ -14,7 +14,9 @@ MouseArea {
     id: root
 
     implicitWidth: layout.implicitWidth
-    implicitHeight: layout.implicitHeight
+    // The button strip is as tall as the island's interior, so the active
+    // cell reads as a filled column rather than a chip floating in the middle.
+    implicitHeight: Theme.islandHeight - 2 * Theme.borderWidth
 
     acceptedButtons: Qt.NoButton
     onWheel: event => {
@@ -52,10 +54,12 @@ MouseArea {
                 chipColor: active ? Theme.surface : "transparent"
                 chipRadius: 0        // border-radius: 0 on these
 
-                leftPadding: 8       // padding: 0 8px
+                leftPadding: 8       // padding: 0 8px, no vertical padding
                 rightPadding: 8
-                topPadding: 4
-                bottomPadding: 4
+                // Layout.fillHeight, not height: inside a RowLayout the layout
+                // owns geometry and a plain height assignment is discarded.
+                Layout.fillHeight: true
+                verticalAlignment: Text.AlignVCenter
 
                 onLeft: () => Hyprland.dispatch("workspace " + modelData.id)
             }

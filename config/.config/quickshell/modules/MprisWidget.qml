@@ -22,14 +22,14 @@ Group {
     readonly property bool playing:
         player?.playbackState === MprisPlaybackState.Playing
 
-    // #mpris.playing flipped the whole widget to a filled green pill.
-    readonly property color chip: playing ? Theme.green : "transparent"
-    readonly property color ink: playing ? Theme.bg : Theme.fg
+    // #mpris.playing flipped the whole widget to a filled green pill -
+    // brackets included, since they came from its own format string.
+    chipColor: playing ? Theme.green : "transparent"
+    ink: playing ? Theme.bg : Theme.fg
 
     BarText {
         text: "♪"
         color: root.ink
-        chipColor: root.chip
         leftPadding: 9
     }
 
@@ -39,7 +39,6 @@ Group {
             : root.player.playbackState === MprisPlaybackState.Paused ? "⏸"
             : "■"
         color: root.ink
-        chipColor: root.chip
         leftPadding: 6
         rightPadding: 6
         onLeft: () => root.player?.togglePlaying()
@@ -48,14 +47,12 @@ Group {
     BarText {
         text: "|"
         color: root.playing ? Theme.bg : Theme.fgDim
-        chipColor: root.chip
     }
 
     BarText {
         readonly property string artist: root.player?.trackArtist ?? ""
         text: artist.length > 40 ? artist.slice(0, 40) + "…" : artist
         color: root.playing ? Theme.bg : Theme.fgDim
-        chipColor: root.chip
         leftPadding: 6
         rightPadding: 9
     }
