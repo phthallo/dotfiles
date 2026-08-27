@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Wayland
 import "root:/"
 
@@ -31,12 +32,31 @@ PanelWindow {
     // wlr-foreign-toplevel rather than Hyprland's list: it is populated from
     // connect (Hyprland.toplevels starts empty until refreshToplevels), it
     // carries every window rather than the ones Hyprland last reported, and
-    // appId/activate()/close() are all this needs - so the dock has no
-    // compositor-specific code in it at all.
+    // appId/activate()/close() are all this needs.
     readonly property var windows: [...ToplevelManager.toplevels.values]
 
-    // Grouped by app, in the order each app first appeared, so a button does
-    // not jump along the row when a window somewhere else in it closes.
+    // Which workspace each window is on, which the wlr protocol does not
+    // say - the one thing here that has to come from the compositor.
+    // HyprlandToplevel.wayland is the same object ToplevelManager hands out,
+    // so the two lists join on identity rather than on a matched title.
+    //
+    // A window Hyprland has not reported yet sorts last rather than first,
+    // so a button does not flash into the front of the row and then move.
+    // A large number rather than Infinity: two unknowns subtract to NaN,
+    // which is not a comparator answer Array.sort does anything sane with.
+    readonly property int unknownWorkspace: 1e9
+    readonly property var workspaceOf: {
+        const m = new Map();
+        for (const t of Hyprland.toplevels.values)
+            if (t.wayland)
+                m.set(t.wayland, t.workspace?.id ?? root.unknownWorkspace);
+        return m;
+    }
+
+    // Grouped by app, the groups ordered by the lowest workspace any of
+    // their windows sits on, so the row reads left to right the way the
+    // workspaces do. Ties keep first-seen order, which is what stops a
+    // button jumping when a window somewhere else in its group closes.
     // Both halves come out of one pass: the delegates need the map to find
     // their own windows, the Repeater needs the keys in order.
     //
@@ -44,16 +64,26 @@ PanelWindow {
     // shared "" group - unrelated nameless windows are not the same app.
     readonly property var grouped: {
         const map = ({});
-        const keys = [];
+        const rank = ({});
         const ws = windows;
         for (let i = 0; i < ws.length; i++) {
             const key = ws[i].appId || ("window:" + i);
+            const at = workspaceOf.get(ws[i]) ?? root.unknownWorkspace;
             if (!map[key]) {
                 map[key] = [];
-                keys.push(key);
+                rank[key] = { ws: at, first: i };
             }
             map[key].push(ws[i]);
+            rank[key].ws = Math.min(rank[key].ws, at);
         }
+        const keys = Object.keys(map).sort((a, b) =>
+            rank[a].ws - rank[b].ws || rank[a].first - rank[b].first);
+        // Within a group too, so repeated clicks walk the windows in
+        // workspace order rather than in whatever order they were opened.
+        for (const key of keys)
+            map[key].sort((a, b) =>
+                (workspaceOf.get(a) ?? root.unknownWorkspace)
+                - (workspaceOf.get(b) ?? root.unknownWorkspace));
         return { map, keys };
     }
 
@@ -62,6 +92,11 @@ PanelWindow {
     // ScriptModel has no count property, so this asks the array itself.
     visible: windows.length > 0
     exclusiveZone: visible ? implicitHeight + margins.bottom : 0
+
+    // Hyprland's toplevel list starts empty and only fills on request; the
+    // event socket keeps it current after that. Without this the dock draws
+    // once in first-seen order before dropping into workspace order.
+    Component.onCompleted: Hyprland.refreshToplevels()
 
     WlrLayershell.layer: WlrLayer.Top
     WlrLayershell.namespace: "quickshell:dock"
