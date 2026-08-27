@@ -25,13 +25,17 @@ Group {
     readonly property bool playing:
         player?.playbackState === MprisPlaybackState.Playing
 
-    //  is the stop glyph: with nothing playing the widget stays put
-    // and reads as stopped, rather than appearing and disappearing and
-    // shifting everything beside it every time a player comes and goes.
-    readonly property string statusIcon: !player ? ""
-        : playing ? "▶"
-        : player.playbackState === MprisPlaybackState.Paused ? "⏸"
+    readonly property string statusIcon: playing ? "▶"
+        : player?.playbackState === MprisPlaybackState.Paused ? "⏸"
         : ""
+
+    // Gone entirely with nothing playing, matching the panel's card. A
+    // paused player still counts - the widget is how you resume it - but
+    // playerctld keeps a stopped, title-less player around indefinitely, so
+    // "a player exists" on its own is not a signal that anything is on.
+    visible: !!player
+        && player.playbackState !== MprisPlaybackState.Stopped
+        && !!player.trackTitle
 
     // dynamic-len: 40, dynamic-order: ["artist"]
     readonly property string dynamic: {
@@ -41,7 +45,7 @@ Group {
 
     // #mpris.playing flips the whole label, brackets included, to a filled
     // green pill.
-    ink: playing ? Theme.bg : player ? Theme.fg : Theme.fgDim
+    ink: playing ? Theme.bg : Theme.fg
     chipColor: playing ? Theme.green : "transparent"
 
     BarText {
