@@ -1,0 +1,28 @@
+import QtQuick
+
+// waybar's custom/swaync: the bell, with an unread count in superscript and a
+// crossed-out variant for do-not-disturb.
+//
+// Left click toggled swaync's panel and right click toggled DND. Both now go
+// to our own Notifications service rather than out to swaync-client.
+BarText {
+    id: root
+
+    text: Notifications.dnd ? "" : ""
+    color: Notifications.list.length > 0 && !Notifications.dnd
+        ? Theme.accent : Theme.fg
+
+    onLeft: () => Notifications.panelOpen = !Notifications.panelOpen
+    onRight: () => Notifications.dnd = !Notifications.dnd
+
+    // The count rides above the glyph the way waybar's <sup> did.
+    Text {
+        visible: Notifications.list.length > 0
+        text: Notifications.list.length
+        anchors.left: parent.right
+        anchors.bottom: parent.verticalCenter
+        color: Theme.accent
+        font.family: Theme.fontFamily
+        font.pixelSize: Math.round(Theme.fontSize * 0.6)
+    }
+}
