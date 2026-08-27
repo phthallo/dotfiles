@@ -30,6 +30,12 @@ forking, a pipe being read and a label being relaid out - on battery that is
 the difference between a shell you never notice and one that shows up in
 `powertop`.
 
+Measured on this machine, idle desktop, 60s windows, `utime+stime` from
+`/proc/<pid>/stat`:
+
+    waybar + swaync + nwg-dock   307 jiffies / 60s   ~5.1% of one core
+    quickshell                    28 jiffies / 60s   ~0.5% of one core
+
 What was polling, and what it is now:
 
 | was | every | now |

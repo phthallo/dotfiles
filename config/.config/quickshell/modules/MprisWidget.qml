@@ -9,7 +9,6 @@ import "root:/"
 // between them and read wider than waybar's.
 BarText {
     id: root
-    visible: !!player
 
     // The first player actually playing, falling back to the first that
     // exists - so a paused Spotify still shows rather than the widget
@@ -23,7 +22,10 @@ BarText {
     readonly property bool playing:
         player?.playbackState === MprisPlaybackState.Playing
 
-    readonly property string statusIcon: !player ? ""
+    // \uf04d is the stop glyph: with nothing playing the widget stays put
+    // and reads as stopped, rather than appearing and disappearing and
+    // shifting everything beside it every time a player comes and goes.
+    readonly property string statusIcon: !player ? "\uf04d"
         : playing ? "▶"
         : player.playbackState === MprisPlaybackState.Paused ? "⏸"
         : "\uf04d"
@@ -34,10 +36,11 @@ BarText {
         return a.length > 40 ? a.slice(0, 40) : a;
     }
 
-    text: "[ \uf001  " + statusIcon + " | " + dynamic + " ]"
+    // The separator only earns its place when there is an artist after it.
+    text: "[ \uf001  " + statusIcon + (dynamic ? " | " + dynamic : "") + " ]"
 
     // #mpris.playing flips the whole label to a filled green pill.
-    color: playing ? Theme.bg : Theme.fg
+    color: playing ? Theme.bg : player ? Theme.fg : Theme.fgDim
     chipColor: playing ? Theme.green : "transparent"
     chipRadius: 2
     leftPadding: 9
