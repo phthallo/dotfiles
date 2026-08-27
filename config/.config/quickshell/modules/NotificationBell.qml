@@ -13,6 +13,10 @@ BarText {
     color: Notifications.list.length > 0 && !Notifications.dnd
         ? Theme.accent : Theme.fg
 
+    font.pixelSize: Theme.fontSize + 1   // #custom-swaync: 16px
+    leftPadding: 5
+    rightPadding: 10
+
     onLeft: () => Notifications.panelOpen = !Notifications.panelOpen
     onRight: () => Notifications.dnd = !Notifications.dnd
 

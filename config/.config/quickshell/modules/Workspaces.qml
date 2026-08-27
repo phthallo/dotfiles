@@ -26,7 +26,7 @@ MouseArea {
     RowLayout {
         id: layout
         anchors.fill: parent
-        spacing: 8
+        spacing: 0   // waybar spaced these with 8px of button padding, below
 
         Repeater {
             // Hyprland returns workspaces in creation order, not numeric
@@ -43,8 +43,19 @@ MouseArea {
                 // format-icons mapped 1-6 to themselves and everything else to
                 // a bullet, so the bar stays a fixed width past six.
                 text: modelData.id >= 1 && modelData.id <= 6 ? modelData.id : "•"
-                color: active ? Theme.accent : Theme.fgDim
-                font.bold: active
+
+                // #workspaces button.active: a filled block behind dimmed
+                // text, not brighter text. Reading it the other way round is
+                // what made the port look wrong - the active workspace was an
+                // orange numeral instead of a highlighted cell.
+                color: active ? Theme.fgDim : Theme.fg
+                chipColor: active ? Theme.surface : "transparent"
+                chipRadius: 0        // border-radius: 0 on these
+
+                leftPadding: 8       // padding: 0 8px
+                rightPadding: 8
+                topPadding: 4
+                bottomPadding: 4
 
                 onLeft: () => Hyprland.dispatch("workspace " + modelData.id)
             }

@@ -19,10 +19,9 @@ PanelWindow {
     screen: modelData
 
     color: "transparent"
-    // Height is the island height plus the gap above it. The bar reserves
-    // this much space, which is what waybar's height:50 plus margin-top:20
-    // added up to.
-    implicitHeight: Theme.barHeight + Theme.gap
+    // waybar reserved 50px total and pushed its groups down 20 into it, so
+    // the islands are 30 tall inside a 50 strip.
+    implicitHeight: Theme.barHeight
 
     anchors {
         top: true
@@ -54,7 +53,6 @@ PanelWindow {
             anchors.verticalCenter: parent.verticalCenter
 
             Launcher {}
-            Separator {}
             IdleInhibitor { window: root }
             Separator {}
             ThemeSwitcher {}
@@ -66,7 +64,7 @@ PanelWindow {
             anchors.left: parent.left
             anchors.leftMargin: leftIsland.width + Theme.gap
             anchors.verticalCenter: parent.verticalCenter
-            spacing: Theme.gap
+            spacing: 5
 
             Workspaces {}
             MprisWidget {}
@@ -84,7 +82,7 @@ PanelWindow {
         RowLayout {
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            spacing: Theme.gap
+            spacing: 5
 
             Island {
                 SysInfo { kind: "cpu" }

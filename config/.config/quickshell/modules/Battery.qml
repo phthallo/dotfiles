@@ -1,12 +1,12 @@
 import QtQuick
+import Quickshell
 import Quickshell.Io
 import Quickshell.Services.UPower
 import "root:/"
-import Quickshell
 
 // waybar's battery module. The icon ramp and the warning/critical thresholds
-// are carried over verbatim (30% and 15%), as is the click target - the logout
-// menu, which is an odd place to hang it but is where muscle memory now is.
+// carry over verbatim (30% and 15%), as does the click target - the logout
+// menu, which is an odd place to hang it but is where muscle memory is.
 BarText {
     id: root
 
@@ -16,17 +16,32 @@ BarText {
         ? dev.state === UPowerDeviceState.Charging
           || dev.state === UPowerDeviceState.PendingCharge
         : false
+    readonly property bool plugged: dev
+        ? dev.state === UPowerDeviceState.FullyCharged
+        : false
+    readonly property bool critical: percent <= 15 && !charging && !plugged
 
     readonly property var icons: ["\uF244", "\uF243", "\uF242", "\uF241", "\uF240"]
 
-    text: (charging ? "\uF5E7" : icons[Math.min(4, Math.floor(percent / 20))])
+    text: (charging ? "\uF5E7"
+         : plugged ? "\uF1E6 "
+         : icons[Math.min(4, Math.floor(percent / 20))])
         + " " + percent + "%"
 
-    // waybar drove these off .warning/.critical CSS classes; the colours are
-    // the theme's own rather than the stylesheet's hardcoded gruvbox.
-    color: percent <= 15 && !charging ? Theme.red
-         : percent <= 30 && !charging ? Theme.yellow
-         : Theme.fg
+    // #battery.charging and .plugged filled the cell green with the bar
+    // background as ink; .critical:not(.charging) filled it red. waybar also
+    // blinked the critical state, which is left out deliberately - an
+    // animation that never stops is not something to put on a bar you look at
+    // all day.
+    chipColor: charging || plugged ? Theme.green
+             : critical ? Theme.red
+             : "transparent"
+    color: charging || plugged ? Theme.bg : Theme.fg
+
+    leftPadding: 10
+    rightPadding: 10
+    topPadding: 4
+    bottomPadding: 4
 
     onLeft: () => logout.running = true
 

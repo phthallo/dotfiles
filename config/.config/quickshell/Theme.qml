@@ -100,6 +100,9 @@ Singleton {
     readonly property int radius: 7
     readonly property int borderWidth: 2
     readonly property int barHeight: 50
+    // The islands sit inside barHeight, below the top gap - waybar's
+    // height:50 was the whole strip, not the height of a group.
+    readonly property int islandHeight: barHeight - gap
     readonly property string fontFamily: "0xProto Nerd Font"
     readonly property int fontSize: 15
 }

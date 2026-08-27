@@ -11,6 +11,9 @@ import Quickshell
 // wofi (no cold start, and it can dismiss on an outside click, which wofi
 // as a layer surface cannot).
 BarText {
+    // #custom-themeswitcher: padding-left 5, padding-right 10
+    leftPadding: 5
+    rightPadding: 10
     id: root
     text: "\uE22B"   // palette
 

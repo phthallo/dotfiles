@@ -6,6 +6,8 @@ import "root:/"
 // no network service, so this polls nmcli - which is also what the click
 // target (nmtui) talks to, so the two can never disagree about state.
 BarText {
+    leftPadding: 10
+    rightPadding: 10
     id: root
 
     property string kind: "disconnected"   // wifi | ethernet | disconnected

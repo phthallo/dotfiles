@@ -7,6 +7,8 @@ import Quickshell
 // be, and reimplementing bluetoothctl parsing in QML would be a rewrite with
 // no upside.
 BarText {
+    leftPadding: 10
+    rightPadding: 10
     id: root
     text: ""
 

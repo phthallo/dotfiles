@@ -4,29 +4,41 @@ import "root:/"
 
 // One of the bar's rounded boxes.
 //
-// waybar drew these with .modules-left/.modules-center/.modules-right, plus
-// custom/openbracket and custom/closebracket modules that literally rendered
-// the characters "[" and "]" as padding. Here the box is a real container, so
-// the brackets are gone and the spacing is a property rather than a glyph.
+// waybar drew the border with .modules-left/.modules-center/.modules-right and
+// then put custom/openbracket and custom/closebracket modules INSIDE it, which
+// render the literal characters "[" and "]". They are part of the look rather
+// than padding, so the island draws them itself and every island gets them for
+// free - matching what the stylesheet did for all four groups.
 Rectangle {
     id: root
 
-    default property alias content: layout.data
-    property int spacing: 10
+    default property alias content: inner.data
+    // 0, not a gap: every module carries its own padding, the way
+    // waybar's per-module `padding: 0 10px` rules did. Adding spacing
+    // on top of that double-counts and the island reads as loose.
+    property int spacing: 0
 
     color: Theme.bg
     radius: Theme.radius
     border.width: Theme.borderWidth
-    // waybar used rgba(184,187,38,0.8) - a hardcoded gruvbox green at 80%.
-    // The theme's own active border colour is the honest equivalent.
     border.color: Theme.borderActive
 
-    implicitWidth: layout.implicitWidth + Theme.gap
-    implicitHeight: Theme.barHeight
+    implicitWidth: row.implicitWidth + 20   // .modules-*: padding 0 10px
+    implicitHeight: Theme.islandHeight
 
-    RowLayout {
-        id: layout
+    Row {
+        id: row
         anchors.centerIn: parent
-        spacing: root.spacing
+        spacing: 0
+
+        Bracket { text: "[" }
+
+        RowLayout {
+            id: inner
+            spacing: root.spacing
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
+        Bracket { text: "]" }
     }
 }

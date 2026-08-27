@@ -9,6 +9,9 @@ import "root:/"
 // the bar is always mapped, so the inhibit lasts exactly as long as it is
 // toggled on.
 BarText {
+    // #idle_inhibitor: padding 0 10px 0 0
+    leftPadding: 0
+    rightPadding: 10
     id: root
 
     required property var window

@@ -9,6 +9,8 @@ import Quickshell
 // stripping the marker back off afterwards. Doing the arithmetic is shorter
 // and says what it means.
 BarText {
+    leftPadding: 10
+    rightPadding: 10
     id: root
 
     readonly property int hour12: clock.hours % 12 || 12

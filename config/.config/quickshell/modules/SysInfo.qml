@@ -9,6 +9,8 @@ import Quickshell.Io
 // boot, so a single read tells you the average since power-on, which is not
 // what anyone means by "CPU:12%".
 BarText {
+    leftPadding: 10
+    rightPadding: 10
     id: root
 
     property string kind: "cpu"  // "cpu" or "memory"
