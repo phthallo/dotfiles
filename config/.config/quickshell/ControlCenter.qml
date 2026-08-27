@@ -80,7 +80,11 @@ Scope {
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.namespace: "quickshell:controlcenter"
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
-        exclusiveZone: Theme.panelWidth + Theme.gap
+
+        // swaync reserved its width and shoved every tiled window aside on
+        // open. It floats over them instead: opening the panel should not
+        // reflow the desktop under it.
+        exclusionMode: ExclusionMode.Ignore
 
         // The panel is as tall as its content, top-aligned, and the rest of
         // the surface is click-through so the backdrop below can take it.
@@ -254,24 +258,34 @@ Scope {
 
                 // ---- notifications ----
                 // min-height 200 / max-height 460, scrolling inside that.
-                Flickable {
+                // The placeholder is a sibling of the Flickable, not a child:
+                // a child is parented to the content item, which is zero-high
+                // when the list is empty, so "No Notifications" ended up
+                // half-hidden behind the title rule.
+                Item {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: Math.max(200, Math.min(460, contentHeight))
-                    contentHeight: notifList.implicitHeight
-                    clip: true
-                    boundsBehavior: Flickable.StopAtBounds
+                    Layout.preferredHeight:
+                        Math.max(200, Math.min(460, flick.contentHeight))
 
-                    ColumnLayout {
-                        id: notifList
-                        width: parent.width
-                        spacing: 2 * Theme.cardGap   // .notification-background padding: 4px 0
+                    Flickable {
+                        id: flick
+                        anchors.fill: parent
+                        contentHeight: notifList.implicitHeight
+                        clip: true
+                        boundsBehavior: Flickable.StopAtBounds
 
-                        Repeater {
-                            model: Notifications.list
-                            delegate: NotifCard {
-                                required property var modelData
-                                notif: modelData
-                                cardWidth: notifList.width
+                        ColumnLayout {
+                            id: notifList
+                            width: parent.width
+                            spacing: 2 * Theme.cardGap   // .notification-background padding: 4px 0
+
+                            Repeater {
+                                model: Notifications.list
+                                delegate: NotifCard {
+                                    required property var modelData
+                                    notif: modelData
+                                    cardWidth: notifList.width
+                                }
                             }
                         }
                     }

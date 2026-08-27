@@ -15,6 +15,18 @@ PopupWindow {
     default property alias content: inner.data
     property int contentWidth: 320
 
+    // The window is bigger than the card it draws: transparent padding on
+    // every side, with the card centred in it. SlideX only guarantees the
+    // *window* stays on screen, so a popup hung off a bar item near the edge
+    // used to end up with its border flush against the screen - and the
+    // theme switcher lives in the left island, so it always did. Padding the
+    // window means the card lands Theme.gap from the edge, the same offset
+    // every tiled window and the bar itself use. The mask keeps the padding
+    // from eating clicks: input outside the card passes through, so a click
+    // beside it still dismisses through the grab.
+    readonly property int pad: Theme.gap
+    readonly property int dropGap: Math.round(Theme.gap / 2)
+
     // Callers flip `open`, never `visible`. The compositor closes a grabbing
     // popup on its own when a click lands outside it, so a `visible: open`
     // binding would go stale and the next click on the bar button would only
@@ -29,8 +41,10 @@ PopupWindow {
         if (visible) show.restart();
     }
 
-    implicitWidth: contentWidth
-    implicitHeight: Math.min(600, inner.implicitHeight + 2 * Theme.panelPad)
+    implicitWidth: contentWidth + 2 * pad
+    implicitHeight: dropGap + pad
+        + Math.min(600, inner.implicitHeight + 2 * Theme.panelPad)
+    mask: Region { item: card }
     color: "transparent"
     grabFocus: true
 
@@ -57,7 +71,11 @@ PopupWindow {
 
     Rectangle {
         id: card
-        anchors.fill: parent
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.top: parent.top
+        anchors.topMargin: root.dropGap
+        width: root.contentWidth
+        height: parent.height - root.dropGap - root.pad
         transform: Translate { id: slide }
         color: Theme.bg
         radius: Theme.panelRadius

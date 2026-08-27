@@ -18,7 +18,12 @@ Item {
     readonly property bool playing:
         player?.playbackState === MprisPlaybackState.Playing
 
+    // Gone, not greyed out, when nothing is playing - a paused player still
+    // counts, since the card is how you resume it. The bar's little mpris
+    // chip is the always-there one.
     visible: !!player
+        && player.playbackState !== MprisPlaybackState.Stopped
+        && !!player.trackTitle
     implicitHeight: visible ? content.implicitHeight + 10 : 0
 
     // border-top: 1px solid rgba(255,255,255,0.10), padding: 10px 0 0 0
